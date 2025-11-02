@@ -53,7 +53,7 @@ This document orchestrates the implementation of BasicAppDataTypes - a fundament
 
 ```
 main
-└── feature/BAD (feature branch)
+└── feature/BAD-main (feature branch)
     ├── feature/BAD/P1 (phase 1: type system)
     ├── feature/BAD/P2 (phase 2: register mapping)
     ├── feature/BAD/P3 (phase 3: package model)
@@ -65,8 +65,8 @@ main
 ### Starting a Phase
 
 ```bash
-# Ensure you're on feature/BAD
-git checkout feature/BAD
+# Ensure you're on feature/BAD-main
+git checkout feature/BAD-main
 
 # Create phase branch
 git checkout -b feature/BAD/P{N}
@@ -96,13 +96,13 @@ git add <files>
 git commit -m "feat(BAD/P{N}): Complete Phase {N} - <description>"
 
 # Switch back to feature branch
-git checkout feature/BAD
+git checkout feature/BAD-main
 
 # Merge with merge commit (preserves history)
 git merge --no-ff feature/BAD/P{N} -m "Merge Phase {N}: <description>"
 
 # Example for Phase 1:
-git checkout feature/BAD
+git checkout feature/BAD-main
 git merge --no-ff feature/BAD/P1 -m "Merge Phase 1: Core type system implementation"
 ```
 
@@ -120,7 +120,7 @@ Once all phases are complete and tested:
 
 ```bash
 git checkout main
-git merge --no-ff feature/BAD -m "feat: Add BasicAppDataTypes system
+git merge --no-ff feature/BAD-main -m "feat: Add BasicAppDataTypes system
 
 Complete implementation of BasicAppDataTypes with:
 - Type-safe register communication
@@ -247,7 +247,7 @@ When completing work in a session:
 1. Save all work in progress
 2. Create phase summary file (`BAD_Phase{N}_COMPLETE.md`)
 3. Commit to phase branch: `git commit -m "feat(BAD/P{N}): Complete Phase {N}"`
-4. Merge to feature/BAD: `git merge --no-ff feature/BAD/P{N}` (see [Git Workflow](#git-workflow))
+4. Merge to feature/BAD-main: `git merge --no-ff feature/BAD/P{N}` (see [Git Workflow](#git-workflow))
 5. Update this orchestrator's status table
 6. Note any blockers or decisions needed
 

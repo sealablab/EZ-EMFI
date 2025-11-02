@@ -13,7 +13,7 @@
 
 **Starting this phase:**
 ```bash
-git checkout feature/BAD
+git checkout feature/BAD-main
 git checkout -b feature/BAD/P6
 ```
 
@@ -33,7 +33,7 @@ git commit -m "feat(BAD/P6): Complete Phase 6 - Documentation and deployment"
 # Write BAD_Phase6_COMPLETE.md with summary
 
 # Merge back to feature branch
-git checkout feature/BAD
+git checkout feature/BAD-main
 git merge --no-ff feature/BAD/P6 -m "Merge Phase 6: Documentation and deployment guides"
 
 # Update orchestrator status table to show all phases complete
@@ -43,7 +43,7 @@ git merge --no-ff feature/BAD/P6 -m "Merge Phase 6: Documentation and deployment
 Once all phases are complete, tested, and documented:
 ```bash
 git checkout main
-git merge --no-ff feature/BAD -m "feat: Add BasicAppDataTypes system"
+git merge --no-ff feature/BAD-main -m "feat: Add BasicAppDataTypes system"
 ```
 
 **Full workflow:** See [BAD_MASTER_Orchestrator.md](./BAD_MASTER_Orchestrator.md#git-workflow)

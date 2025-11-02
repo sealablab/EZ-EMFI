@@ -14,7 +14,7 @@
 
 **Starting this phase:**
 ```bash
-git checkout feature/BAD
+git checkout feature/BAD-main
 git checkout -b feature/BAD/P4
 ```
 
@@ -34,7 +34,7 @@ git commit -m "feat(BAD/P4): Complete Phase 4 - Code generation system"
 # Write BAD_Phase4_COMPLETE.md with summary
 
 # Merge back to feature branch
-git checkout feature/BAD
+git checkout feature/BAD-main
 git merge --no-ff feature/BAD/P4 -m "Merge Phase 4: Template and code generator updates"
 ```
 

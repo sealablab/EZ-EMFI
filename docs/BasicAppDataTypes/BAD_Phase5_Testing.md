@@ -12,7 +12,7 @@
 
 **Starting this phase:**
 ```bash
-git checkout feature/BAD
+git checkout feature/BAD-main
 git checkout -b feature/BAD/P5
 ```
 
@@ -32,7 +32,7 @@ git commit -m "feat(BAD/P5): Complete Phase 5 - Comprehensive testing suite"
 # Write BAD_Phase5_COMPLETE.md with summary
 
 # Merge back to feature branch
-git checkout feature/BAD
+git checkout feature/BAD-main
 git merge --no-ff feature/BAD/P5 -m "Merge Phase 5: Testing and validation"
 ```
 

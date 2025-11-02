@@ -13,7 +13,7 @@
 
 **Starting this phase:**
 ```bash
-git checkout feature/BAD
+git checkout feature/BAD-main
 git checkout -b feature/BAD/P2
 ```
 
@@ -33,7 +33,7 @@ git commit -m "feat(BAD/P2): Complete Phase 2 - Register mapping algorithm"
 # Write BAD_Phase2_COMPLETE.md with summary
 
 # Merge back to feature branch
-git checkout feature/BAD
+git checkout feature/BAD-main
 git merge --no-ff feature/BAD/P2 -m "Merge Phase 2: Automatic register mapping"
 ```
 

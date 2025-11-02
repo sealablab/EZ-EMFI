@@ -1,6 +1,6 @@
 # BasicAppDataTypes Implementation
 
-**Feature Branch:** `feature/BAD`
+**Feature Branch:** `feature/BAD-main`
 **Status:** Planning Complete, Implementation Pending
 **Created:** 2025-11-02
 
@@ -17,7 +17,7 @@ BasicAppDataTypes is a fundamental upgrade to the EZ-EMFI custom instrument arch
 
 ```
 main
-└── feature/BAD (feature branch - YOU ARE HERE)
+└── feature/BAD-main (feature branch - YOU ARE HERE)
     ├── feature/BAD/P1 (phase 1: type system)
     ├── feature/BAD/P2 (phase 2: register mapping)
     ├── feature/BAD/P3 (phase 3: package model)
@@ -28,9 +28,9 @@ main
 
 ### Workflow Summary
 
-1. **Each phase gets its own branch** off `feature/BAD`
+1. **Each phase gets its own branch** off `feature/BAD-main`
 2. **Work is done on phase branch** with frequent commits
-3. **Phase is merged back** to `feature/BAD` with merge commit (--no-ff)
+3. **Phase is merged back** to `feature/BAD-main` with merge commit (--no-ff)
 4. **Repeat** for all 6 phases
 5. **Final merge** to `main` when all phases complete
 
@@ -52,8 +52,8 @@ See [BAD_MASTER_Orchestrator.md](./BAD_MASTER_Orchestrator.md#git-workflow) for 
 ## Starting a Phase
 
 ```bash
-# From feature/BAD
-git checkout feature/BAD
+# From feature/BAD-main
+git checkout feature/BAD-main
 git checkout -b feature/BAD/P{N}
 
 # Open the phase prompt
@@ -71,7 +71,7 @@ git commit -m "feat(BAD/P{N}): Complete Phase {N} - <description>"
 # Write docs/BasicAppDataTypes/BAD_Phase{N}_COMPLETE.md
 
 # Merge to feature branch
-git checkout feature/BAD
+git checkout feature/BAD-main
 git merge --no-ff feature/BAD/P{N} -m "Merge Phase {N}: <description>"
 
 # Update orchestrator status table
@@ -99,13 +99,13 @@ Track progress in [BAD_MASTER_Orchestrator.md](./BAD_MASTER_Orchestrator.md#phas
 git branch --list "feature/BAD/*"
 
 # See what's merged
-git log --oneline --graph feature/BAD
+git log --oneline --graph feature/BAD-main
 
 # View phase commits
 git log --oneline --grep="feat(BAD/P"
 
 # Start next phase
-git checkout feature/BAD
+git checkout feature/BAD-main
 git checkout -b feature/BAD/P{next}
 ```
 

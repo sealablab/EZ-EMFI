@@ -13,7 +13,7 @@
 
 **Starting this phase:**
 ```bash
-git checkout feature/BAD
+git checkout feature/BAD-main
 git checkout -b feature/BAD/P3
 ```
 
@@ -33,7 +33,7 @@ git commit -m "feat(BAD/P3): Complete Phase 3 - Package model and YAML v2.0"
 # Write BAD_Phase3_COMPLETE.md with summary
 
 # Merge back to feature branch
-git checkout feature/BAD
+git checkout feature/BAD-main
 git merge --no-ff feature/BAD/P3 -m "Merge Phase 3: Package bundling and YAML schema"
 ```
 

@@ -11,7 +11,7 @@
 
 **Starting this phase:**
 ```bash
-git checkout feature/BAD
+git checkout feature/BAD-main
 git checkout -b feature/BAD/P1
 ```
 
@@ -31,7 +31,7 @@ git commit -m "feat(BAD/P1): Complete Phase 1 - Core type system"
 # Write BAD_Phase1_COMPLETE.md with summary
 
 # Merge back to feature branch
-git checkout feature/BAD
+git checkout feature/BAD-main
 git merge --no-ff feature/BAD/P1 -m "Merge Phase 1: Core type system implementation"
 ```
 
