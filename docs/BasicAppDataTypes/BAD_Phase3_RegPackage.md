@@ -7,6 +7,38 @@
 **Phase 2 Summary:** ./BAD_Phase2_COMPLETE.md
 **Output:** `models/custom_inst/reg_package.py` and YAML schema evolution
 
+## Git Workflow
+
+**Branch:** `feature/BAD/P3`
+
+**Starting this phase:**
+```bash
+git checkout feature/BAD
+git checkout -b feature/BAD/P3
+```
+
+**During development:**
+```bash
+# Commit frequently as you implement
+git add <files>
+git commit -m "feat(BAD/P3): <description>"
+```
+
+**Completing this phase:**
+```bash
+# Final commit with phase completion
+git add .
+git commit -m "feat(BAD/P3): Complete Phase 3 - Package model and YAML v2.0"
+
+# Write BAD_Phase3_COMPLETE.md with summary
+
+# Merge back to feature branch
+git checkout feature/BAD
+git merge --no-ff feature/BAD/P3 -m "Merge Phase 3: Package bundling and YAML schema"
+```
+
+**Full workflow:** See [BAD_MASTER_Orchestrator.md](./BAD_MASTER_Orchestrator.md#git-workflow)
+
 ## Context Loading
 
 Please review these files and previous phase outputs:

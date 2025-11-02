@@ -8,6 +8,38 @@
 **Phase 3 Summary:** ./BAD_Phase3_COMPLETE.md
 **Output:** Updated templates and enhanced `generate_custom_inst.py`
 
+## Git Workflow
+
+**Branch:** `feature/BAD/P4`
+
+**Starting this phase:**
+```bash
+git checkout feature/BAD
+git checkout -b feature/BAD/P4
+```
+
+**During development:**
+```bash
+# Commit frequently as you implement
+git add <files>
+git commit -m "feat(BAD/P4): <description>"
+```
+
+**Completing this phase:**
+```bash
+# Final commit with phase completion
+git add .
+git commit -m "feat(BAD/P4): Complete Phase 4 - Code generation system"
+
+# Write BAD_Phase4_COMPLETE.md with summary
+
+# Merge back to feature branch
+git checkout feature/BAD
+git merge --no-ff feature/BAD/P4 -m "Merge Phase 4: Template and code generator updates"
+```
+
+**Full workflow:** See [BAD_MASTER_Orchestrator.md](./BAD_MASTER_Orchestrator.md#git-workflow)
+
 ## Context Loading
 
 Please review these files and previous phase outputs:

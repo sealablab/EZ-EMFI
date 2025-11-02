@@ -12,16 +12,18 @@ This document orchestrates the implementation of BasicAppDataTypes - a fundament
 
 ## Phase Status Tracker
 
-| Phase | File | Status | Summary Location | Git Commit |
-|-------|------|--------|------------------|------------|
-| 1 | [BAD_Phase1_TypeSystem.md](./BAD_Phase1_TypeSystem.md) | 🔴 Not Started | `BAD_Phase1_COMPLETE.md` | - |
-| 2 | [BAD_Phase2_RegisterMapping.md](./BAD_Phase2_RegisterMapping.md) | 🔴 Not Started | `BAD_Phase2_COMPLETE.md` | - |
-| 3 | [BAD_Phase3_RegPackage.md](./BAD_Phase3_RegPackage.md) | 🔴 Not Started | `BAD_Phase3_COMPLETE.md` | - |
-| 4 | [BAD_Phase4_CodeGeneration.md](./BAD_Phase4_CodeGeneration.md) | 🔴 Not Started | `BAD_Phase4_COMPLETE.md` | - |
-| 5 | [BAD_Phase5_Testing.md](./BAD_Phase5_Testing.md) | 🔴 Not Started | `BAD_Phase5_COMPLETE.md` | - |
-| 6 | [BAD_Phase6_Documentation.md](./BAD_Phase6_Documentation.md) | 🔴 Not Started | `BAD_Phase6_COMPLETE.md` | - |
+| Phase | File | Status | Branch | Merged | Summary | Commit |
+|-------|------|--------|--------|--------|---------|--------|
+| 1 | [BAD_Phase1_TypeSystem.md](./BAD_Phase1_TypeSystem.md) | 🔴 Not Started | `feature/BAD/P1` | ❌ | `BAD_Phase1_COMPLETE.md` | - |
+| 2 | [BAD_Phase2_RegisterMapping.md](./BAD_Phase2_RegisterMapping.md) | 🔴 Not Started | `feature/BAD/P2` | ❌ | `BAD_Phase2_COMPLETE.md` | - |
+| 3 | [BAD_Phase3_RegPackage.md](./BAD_Phase3_RegPackage.md) | 🔴 Not Started | `feature/BAD/P3` | ❌ | `BAD_Phase3_COMPLETE.md` | - |
+| 4 | [BAD_Phase4_CodeGeneration.md](./BAD_Phase4_CodeGeneration.md) | 🔴 Not Started | `feature/BAD/P4` | ❌ | `BAD_Phase4_COMPLETE.md` | - |
+| 5 | [BAD_Phase5_Testing.md](./BAD_Phase5_Testing.md) | 🔴 Not Started | `feature/BAD/P5` | ❌ | `BAD_Phase5_COMPLETE.md` | - |
+| 6 | [BAD_Phase6_Documentation.md](./BAD_Phase6_Documentation.md) | 🔴 Not Started | `feature/BAD/P6` | ❌ | `BAD_Phase6_COMPLETE.md` | - |
 
-**Legend:** 🔴 Not Started | 🟡 In Progress | 🟢 Complete | ⚠️ Blocked
+**Legend:**
+- **Status:** 🔴 Not Started | 🟡 In Progress | 🟢 Complete | ⚠️ Blocked
+- **Merged:** ✅ Merged to feature/BAD | ❌ Not merged
 
 ## Quick Start
 
@@ -44,6 +46,89 @@ This document orchestrates the implementation of BasicAppDataTypes - a fundament
    # Check git history
    git log --oneline --grep="feat(BAD)"
    ```
+
+## Git Workflow
+
+### Branch Structure
+
+```
+main
+└── feature/BAD (feature branch)
+    ├── feature/BAD/P1 (phase 1: type system)
+    ├── feature/BAD/P2 (phase 2: register mapping)
+    ├── feature/BAD/P3 (phase 3: package model)
+    ├── feature/BAD/P4 (phase 4: code generation)
+    ├── feature/BAD/P5 (phase 5: testing)
+    └── feature/BAD/P6 (phase 6: documentation)
+```
+
+### Starting a Phase
+
+```bash
+# Ensure you're on feature/BAD
+git checkout feature/BAD
+
+# Create phase branch
+git checkout -b feature/BAD/P{N}
+
+# Example for Phase 1:
+git checkout -b feature/BAD/P1
+```
+
+### Working on a Phase
+
+```bash
+# Make changes, commit frequently
+git add <files>
+git commit -m "feat(BAD/P{N}): <description>"
+
+# Example commits during Phase 1:
+git commit -m "feat(BAD/P1): Add BasicAppDataTypes enum"
+git commit -m "feat(BAD/P1): Implement voltage conversion utilities"
+git commit -m "feat(BAD/P1): Add type registry with metadata"
+```
+
+### Completing a Phase
+
+```bash
+# Final commit on phase branch
+git add <files>
+git commit -m "feat(BAD/P{N}): Complete Phase {N} - <description>"
+
+# Switch back to feature branch
+git checkout feature/BAD
+
+# Merge with merge commit (preserves history)
+git merge --no-ff feature/BAD/P{N} -m "Merge Phase {N}: <description>"
+
+# Example for Phase 1:
+git checkout feature/BAD
+git merge --no-ff feature/BAD/P1 -m "Merge Phase 1: Core type system implementation"
+```
+
+### Updating This Orchestrator
+
+After merging a phase, update the status table:
+
+```markdown
+| 1 | ... | 🟢 Complete | feature/BAD/P1 | ✅ | BAD_Phase1_COMPLETE.md | abc123f |
+```
+
+### Final Merge to Main
+
+Once all phases are complete and tested:
+
+```bash
+git checkout main
+git merge --no-ff feature/BAD -m "feat: Add BasicAppDataTypes system
+
+Complete implementation of BasicAppDataTypes with:
+- Type-safe register communication
+- Automatic register mapping (50-75% space savings)
+- Comprehensive testing and documentation
+
+See docs/BasicAppDataTypes/ for details."
+```
 
 ## High-Level Goals
 
@@ -151,18 +236,20 @@ These files provide essential context across all phases:
 
 ### Starting Fresh
 When starting a phase in a new Claude session:
-1. Load the phase prompt completely
-2. Check for previous phase summaries
-3. Review any git commits with `feat(BAD)` prefix
-4. Begin interactive work on the phase
+1. Create phase branch: `git checkout -b feature/BAD/P{N}` (see [Git Workflow](#git-workflow))
+2. Load the phase prompt completely
+3. Check for previous phase summaries (`BAD_Phase{N-1}_COMPLETE.md`)
+4. Review any git commits with `feat(BAD/P{N})` prefix
+5. Begin interactive work on the phase
 
 ### Handoff Protocol
 When completing work in a session:
 1. Save all work in progress
-2. Update the phase summary file
-3. Commit with descriptive message
-4. Update this orchestrator's status table
-5. Note any blockers or decisions needed
+2. Create phase summary file (`BAD_Phase{N}_COMPLETE.md`)
+3. Commit to phase branch: `git commit -m "feat(BAD/P{N}): Complete Phase {N}"`
+4. Merge to feature/BAD: `git merge --no-ff feature/BAD/P{N}` (see [Git Workflow](#git-workflow))
+5. Update this orchestrator's status table
+6. Note any blockers or decisions needed
 
 ### Decision Log
 Track key decisions here as phases progress:

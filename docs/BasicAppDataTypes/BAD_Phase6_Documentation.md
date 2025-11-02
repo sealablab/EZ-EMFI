@@ -7,6 +7,47 @@
 **Test Status:** (from Phase 5)
 **Output:** User guides, API docs, migration guides, and deployment instructions
 
+## Git Workflow
+
+**Branch:** `feature/BAD/P6`
+
+**Starting this phase:**
+```bash
+git checkout feature/BAD
+git checkout -b feature/BAD/P6
+```
+
+**During development:**
+```bash
+# Commit frequently as you implement
+git add <files>
+git commit -m "feat(BAD/P6): <description>"
+```
+
+**Completing this phase:**
+```bash
+# Final commit with phase completion
+git add .
+git commit -m "feat(BAD/P6): Complete Phase 6 - Documentation and deployment"
+
+# Write BAD_Phase6_COMPLETE.md with summary
+
+# Merge back to feature branch
+git checkout feature/BAD
+git merge --no-ff feature/BAD/P6 -m "Merge Phase 6: Documentation and deployment guides"
+
+# Update orchestrator status table to show all phases complete
+```
+
+**Final merge to main:**
+Once all phases are complete, tested, and documented:
+```bash
+git checkout main
+git merge --no-ff feature/BAD -m "feat: Add BasicAppDataTypes system"
+```
+
+**Full workflow:** See [BAD_MASTER_Orchestrator.md](./BAD_MASTER_Orchestrator.md#git-workflow)
+
 ## Context Loading
 
 Please review these files and all previous phase outputs:

@@ -5,6 +5,38 @@
 **Prerequisites:** None (first phase)
 **Output:** `models/custom_inst/basic_app_datatypes.py` and specification
 
+## Git Workflow
+
+**Branch:** `feature/BAD/P1`
+
+**Starting this phase:**
+```bash
+git checkout feature/BAD
+git checkout -b feature/BAD/P1
+```
+
+**During development:**
+```bash
+# Commit frequently as you implement
+git add <files>
+git commit -m "feat(BAD/P1): <description>"
+```
+
+**Completing this phase:**
+```bash
+# Final commit with phase completion
+git add .
+git commit -m "feat(BAD/P1): Complete Phase 1 - Core type system"
+
+# Write BAD_Phase1_COMPLETE.md with summary
+
+# Merge back to feature branch
+git checkout feature/BAD
+git merge --no-ff feature/BAD/P1 -m "Merge Phase 1: Core type system implementation"
+```
+
+**Full workflow:** See [BAD_MASTER_Orchestrator.md](./BAD_MASTER_Orchestrator.md#git-workflow)
+
 ## Context Loading
 
 Please review these files to understand the current system:
