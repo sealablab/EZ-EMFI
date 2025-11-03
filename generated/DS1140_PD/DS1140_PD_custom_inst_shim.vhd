@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
 -- File: DS1140_PD_custom_inst_shim.vhd
--- Generated: 2025-11-03 00:51:54
+-- Generated: 2025-11-03 00:53:15
 -- Generator: tools/generate_custom_inst_v2.py
 -- Template Version: 2.0 (BasicAppDataTypes)
 --
