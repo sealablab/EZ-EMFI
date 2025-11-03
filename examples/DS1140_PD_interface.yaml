@@ -14,7 +14,7 @@
 
 app_name: DS1140_PD
 description: "EMFI probe driver register interface with automatic mapping"
-
+platform: moku_go  # Target platform: moku_go | moku_lab | moku_pro | moku_delta
 mapping_strategy: best_fit  # Optimal packing (alternatives: first_fit, type_clustering)
 
 datatypes:
