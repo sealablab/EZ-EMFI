@@ -76,6 +76,15 @@ Original planning doc (commit `b0cb32bb`) proposes big-bang mono-repo migration 
 | **3. Test Infrastructure** | Centralized / Distributed / Pytest plugin | `spike/centralized-tests` |
 | **4. Agent Boundaries** | Design-only / Design+Test / Full-cycle | `spike/design-test-agent` |
 
+### Critical Questions Answered
+
+**Q1: Should fsm_observer.vhd be in volo-platform-vhdl (generic utility) or probe-specific?**
+- ✅ **Answer:** Generic utility in volo-platform-vhdl/debugging/
+- ✅ **Rationale:** User-confirmed, forge docs recommend for "all custom VHDL instruments", used in 3+ modules
+- ✅ **Also move:** volo_voltage_pkg.vhd → volo-platform-vhdl/packages/ (dependency)
+- 📄 **Full analysis:** `docs/Q1_FSM_OBSERVER_PLACEMENT.md` (363 lines)
+- 📅 **Answered:** 2025-11-03 (commit 8e92f1a)
+
 ---
 
 ## 🚀 Next Steps (Do These in Order)
