@@ -159,13 +159,16 @@ def prepare_template_context(
         if not signal_mapping:
             raise ValueError(f"No register mapping found for {dt_spec.name}")
 
-        # Determine bit range string
-        msb, lsb = signal_mapping.bit_slice
+        # Extract bit range from VHDL slice (respects RegisterMapping abstraction)
+        vhdl_slice = signal_mapping.to_vhdl_slice()
+        # Extract just the bit range part: "app_reg_6(31 downto 16)" -> "(31 downto 16)"
+        bit_range = vhdl_slice.split('(', 1)[1].rstrip(')')
+        bit_range = f"({bit_range})"
+
+        # For single-bit signals, extract the bit position for boolean handling
         if metadata.bit_width == 1:
-            bit_range = f"({msb})"
-            bit_position = msb
+            bit_position = int(bit_range.strip('()'))
         else:
-            bit_range = f"({msb} downto {lsb})"
             bit_position = None
 
         # Build signal entry
@@ -199,11 +202,12 @@ def prepare_template_context(
     for cr_num in sorted(register_map_dict.keys()):
         fields_list = []
         for mapping in register_map_dict[cr_num]:
-            msb, lsb = mapping.bit_slice
-            if msb == lsb:
-                bits_str = f"{msb}"
-            else:
-                bits_str = f"{msb}:{lsb}"
+            # Use RegisterMapping abstraction - extract bit range from VHDL slice
+            vhdl_slice = mapping.to_vhdl_slice()
+            bits_str = vhdl_slice.split('(', 1)[1].rstrip(')')
+            # Convert VHDL "downto" to colon format for comments
+            bits_str = bits_str.replace(' downto ', ':')
+
             fields_list.append({
                 'name': mapping.name,
                 'bits': bits_str,
