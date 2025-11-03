@@ -17,7 +17,7 @@ This document orchestrates the implementation of BasicAppDataTypes - a fundament
 |-------|------|--------|--------|--------|---------|--------|
 | 1 | [BAD_Phase1_TypeSystem.md](./BAD_Phase1_TypeSystem.md) | 🟢 Complete | `feature/BAD/P1` | ✅ | [BAD_Phase1_COMPLETE.md](./BAD_Phase1_COMPLETE.md) | `1701df9` |
 | 2 | [BAD_Phase2_RegisterMapping.md](./BAD_Phase2_RegisterMapping.md) | 🟢 Complete | `feature/BAD/P2` | ✅ | [BAD_Phase2_COMPLETE.md](./BAD_Phase2_COMPLETE.md) | `314d083` |
-| 3 | [BAD_Phase3_RegPackage.md](./BAD_Phase3_RegPackage.md) | 🔴 Not Started | `feature/BAD/P3` | ❌ | `BAD_Phase3_COMPLETE.md` | - |
+| 3 | [BAD_Phase3_RegPackage_r2.md](./BAD_Phase3_RegPackage_r2.md) | 🟡 Ready (r2) | `feature/BAD/P3` | ❌ | `BAD_Phase3_COMPLETE.md` | - |
 | 4 | [BAD_Phase4_CodeGeneration.md](./BAD_Phase4_CodeGeneration.md) | 🔴 Not Started | `feature/BAD/P4` | ❌ | `BAD_Phase4_COMPLETE.md` | - |
 | 5 | [BAD_Phase5_Testing.md](./BAD_Phase5_Testing.md) | 🔴 Not Started | `feature/BAD/P5` | ❌ | `BAD_Phase5_COMPLETE.md` | - |
 | 6 | [BAD_Phase6_Documentation.md](./BAD_Phase6_Documentation.md) | 🔴 Not Started | `feature/BAD/P6` | ❌ | `BAD_Phase6_COMPLETE.md` | - |
@@ -290,6 +290,7 @@ Track key decisions here as phases progress:
 | 2025-11-02 | P1 | Modular file structure (6 files) | Clean separation, easier to navigate |
 | 2025-11-02 | P1 | 23 types (not 25) | Time system needs 10 types, not 12 |
 | 2025-11-02 | P1 | Separate python_tests/ directory | Avoid CocotB test conflicts |
+| 2025-11-02 | P3 | Revision 2 spec created | Fixed TypeConverter integration, removed legacy types, clarified human-friendly units |
 
 ## Notes for Implementation
 
@@ -308,5 +309,5 @@ If you get stuck:
 
 ---
 
-**Last Updated:** 2025-11-02
-**Next Action:** Start Phase 1 using `BAD_Phase1_TypeSystem.md`
+**Last Updated:** 2025-11-02 (Phase 3 r2 ready for implementation)
+**Next Action:** Start Phase 3 using `P3_START_prompt_r2.md` or `BAD_Phase3_RegPackage_r2.md`
