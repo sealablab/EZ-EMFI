@@ -44,8 +44,9 @@ git merge --no-ff feature/BAD/P4 -m "Merge Phase 4: Template and code generator 
 
 Please review these files and previous phase outputs:
 
+### Previous Phase Results
 ```bash
-# Previous phase results
+# Phase 3 completion summary
 cat docs/BasicAppDataTypes/BAD_Phase3_COMPLETE.md
 
 # Current templates
@@ -59,13 +60,49 @@ cat tools/generate_custom_inst.py
 cat VHDL/apps/DS1140_PD/DS1140_PD_custom_inst_shim.vhd | head -100
 ```
 
+### Moku Platform Specifications ⚠️ CRITICAL FOR THIS PHASE
+
+**IMPORTANT:** Code generation is **platform-dependent**. Templates must generate platform-specific VHDL constants.
+
+```bash
+# Platform specifications (REQUIRED reading)
+cat moku-models/docs/MOKU_PLATFORM_SPECIFICATIONS.md
+
+# Platform model implementations
+cat moku-models/moku_models/platforms/moku_go.py
+cat moku-models/moku_models/platforms/moku_lab.py
+cat moku-models/moku_models/platforms/moku_pro.py
+cat moku-models/moku_models/platforms/moku_delta.py
+
+# Central config model
+cat moku-models/moku_models/moku_config.py
+```
+
+**Platform-Critical Parameters:**
+
+| Platform | Clock Frequency | Clock Period | ADC Bits | DAC Bits |
+|----------|----------------|--------------|----------|----------|
+| Moku:Go | 125 MHz | 8.0 ns | 12 | 12 |
+| Moku:Lab | 500 MHz | 2.0 ns | 12 | 16 |
+| Moku:Pro | 1.25 GHz | 0.8 ns | 10* | 16 |
+| Moku:Delta | 5 GHz | 0.2 ns | 14* | 14 |
+
+\* Blended ADC (use primary ADC specs for code gen)
+
+**Implications for Code Generation:**
+1. **Clock constants must be platform-specific** (currently hardcoded to 125 MHz in templates)
+2. **Time conversion functions need platform clock** (time_ms_to_clk_cycles depends on frequency)
+3. **YAML schema must specify target platform** (new field: `platform: moku_go`)
+4. **Generator must read platform specs from moku-models** (not hardcode values)
+
 ## Phase 4 Objectives
 
 ### Primary Goals
 1. Update shim template for type-aware signal generation
 2. Enhance main template with type utilities
 3. Modify code generator to use BasicAppsRegPackage
-4. Generate comprehensive mapping documentation
+4. **Add platform-specific code generation (CRITICAL)**
+5. Generate comprehensive mapping documentation
 
 ### Specific Deliverables
 
@@ -494,7 +531,107 @@ if __name__ == '__main__':
     main()
 ```
 
-#### 4.4 Type Utilities Package
+#### 4.4 Platform-Specific Code Generation ⚠️ CRITICAL
+
+**Problem:** Current templates hardcode 125 MHz clock (line 161 in shim template example). This breaks deployments on Lab/Pro/Delta.
+
+**Solution:** Add platform support to YAML schema and code generator.
+
+##### 4.4.1 Extended YAML Schema
+
+Add platform field to v2.0 YAML:
+
+```yaml
+package_version: "2.0"
+app_name: "DS1140_PD"
+platform: "moku_go"  # NEW: moku_go | moku_lab | moku_pro | moku_delta
+datatypes:
+  - name: "intensity"
+    type: "voltage_mv"
+    default_value: 2400
+```
+
+##### 4.4.2 Platform Integration in Generator
+
+Update `generate_custom_inst.py` to load platform specs:
+
+```python
+from moku_models import (
+    MOKU_GO_PLATFORM,
+    MOKU_LAB_PLATFORM,
+    MOKU_PRO_PLATFORM,
+    MOKU_DELTA_PLATFORM,
+)
+
+class CustomInstGenerator:
+    PLATFORM_MAP = {
+        'moku_go': MOKU_GO_PLATFORM,
+        'moku_lab': MOKU_LAB_PLATFORM,
+        'moku_pro': MOKU_PRO_PLATFORM,
+        'moku_delta': MOKU_DELTA_PLATFORM,
+    }
+
+    def generate(self, yaml_path: Path, output_dir: Path) -> None:
+        package = RegPackageFactory.from_yaml_file(yaml_path)
+
+        # Load platform specs
+        platform_name = package.platform or 'moku_go'  # Default to Go
+        platform = self.PLATFORM_MAP[platform_name]
+
+        # Add platform info to template context
+        self._add_platform_helpers(package, platform)
+
+        # ... rest of generation
+```
+
+##### 4.4.3 Platform-Aware Template Variables
+
+Templates must access platform-specific values:
+
+```jinja
+{% if app.has_time_types() %}
+constant CLK_FREQ_HZ : integer := {{ app.platform_clock_hz }};  -- Platform-specific!
+constant CLK_PERIOD_NS : real := {{ app.platform_clock_period_ns }};
+
+function time_ms_to_cycles(ms_value: unsigned(15 downto 0)) return unsigned is
+begin
+    return resize(ms_value * (CLK_FREQ_HZ/1000), 32);
+end function;
+{% endif %}
+```
+
+##### 4.4.4 Helper Methods for Platform
+
+Add to `_add_template_helpers()`:
+
+```python
+def _add_platform_helpers(self, package: BasicAppsRegPackage, platform: MokuPlatform) -> None:
+    """Add platform-specific values to package for templates"""
+
+    # Clock specs
+    package.platform_name = platform.name
+    package.platform_clock_hz = platform.clock_mhz * 1_000_000
+    package.platform_clock_period_ns = 1000.0 / platform.clock_mhz
+
+    # ADC/DAC specs
+    package.platform_adc_bits = platform.analog_inputs[0].resolution_bits
+    package.platform_dac_bits = platform.analog_outputs[0].resolution_bits
+
+    # Voltage range specs (for validation/documentation)
+    package.platform_input_range_vpp = platform.analog_inputs[0].voltage_range_vpp
+    package.platform_output_range_vpp = platform.analog_outputs[0].voltage_range_vpp
+```
+
+##### 4.4.5 Success Criteria for Platform Support
+
+- [ ] YAML schema includes `platform` field
+- [ ] Generator loads correct platform specs from moku-models
+- [ ] Templates use `{{ app.platform_clock_hz }}` (not hardcoded 125 MHz)
+- [ ] Generated VHDL constants match target platform
+- [ ] Test generation for all 4 platforms (Go/Lab/Pro/Delta)
+- [ ] Documentation shows platform-specific parameters
+
+#### 4.5 Type Utilities Package
 
 Create `shared/custom_inst/templates/basic_app_types_pkg_template.vhd`:
 

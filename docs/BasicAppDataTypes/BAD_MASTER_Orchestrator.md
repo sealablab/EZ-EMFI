@@ -232,6 +232,34 @@ These files provide essential context across all phases:
 - `shared/custom_inst/custom_inst_common_pkg.vhd` - Common VHDL utilities
 - `VHDL/packages/ds1120_pd_pkg.vhd` - Example type conversions
 
+### Moku Platform Specifications (moku-models/)
+BasicAppDataTypes must work across **all 4 Moku platforms**. Platform specs are in the `moku-models` git submodule:
+
+**Essential Platform References:**
+- `moku-models/docs/MOKU_PLATFORM_SPECIFICATIONS.md` - Comprehensive hardware specs (310 lines)
+- `moku-models/moku_models/platforms/moku_go.py` - Moku:Go model (125 MHz, 12-bit ADC/DAC)
+- `moku-models/moku_models/platforms/moku_lab.py` - Moku:Lab model (500 MHz, 12-bit ADC/16-bit DAC)
+- `moku-models/moku_models/platforms/moku_pro.py` - Moku:Pro model (1.25 GHz, 10-bit ADC)
+- `moku-models/moku_models/platforms/moku_delta.py` - Moku:Delta model (5 GHz, 14-bit ADC, flagship)
+- `moku-models/moku_models/moku_config.py` - Central deployment abstraction
+
+**Platform Comparison:**
+
+| Platform | Clock | ADC | DAC | Input Range | Output Range | Slots |
+|----------|-------|-----|-----|-------------|--------------|-------|
+| Moku:Go | 125 MHz | 12-bit | 12-bit | ±25V | ±5V | 2 |
+| Moku:Lab | 500 MHz | 12-bit | 16-bit | ±5V | ±1V | 2 |
+| Moku:Pro | 1.25 GHz | 10-bit* | 16-bit | ±20V | ±5V | 4 |
+| Moku:Delta | 5 GHz | 14-bit* | 14-bit | ±20V | ±5V | 3 |
+
+\* Blended ADC architectures (Pro: 10-bit + 18-bit, Delta: 14-bit + 20-bit)
+
+**Platform-Critical Phases:**
+- **Phase 1 (Type System)**: Voltage/time types must cover all platforms - ✅ Updated with platform context
+- **Phase 4 (Code Generation)**: VHDL templates need platform-specific clocks - ⚠️ CRITICAL
+- **Phase 5 (Testing)**: CocotB tests should validate all platforms - ⚠️ CRITICAL
+- Phases 2, 3, 6 are platform-agnostic (software-only)
+
 ## Workflow Guidelines
 
 ### Starting Fresh
