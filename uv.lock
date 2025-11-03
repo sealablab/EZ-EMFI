@@ -11,6 +11,17 @@ wheels = [
 ]
 
 [[package]]
+name = "basic-app-datatypes"
+version = "0.1.0"
+source = { editable = "libs/basic-app-datatypes" }
+
+[package.metadata]
+requires-dist = [
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
+    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0.0" },
+]
+
+[[package]]
 name = "certifi"
 version = "2025.10.5"
 source = { registry = "https://pypi.org/simple" }
@@ -190,6 +201,7 @@ name = "ez-emfi"
 version = "1.0.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "basic-app-datatypes" },
     { name = "cocotb" },
     { name = "jinja2" },
     { name = "loguru" },
@@ -220,6 +232,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "basic-app-datatypes", editable = "libs/basic-app-datatypes" },
     { name = "cocotb", specifier = ">=1.9.0" },
     { name = "jinja2", specifier = ">=3.0.0" },
     { name = "loguru", specifier = ">=0.7.0" },

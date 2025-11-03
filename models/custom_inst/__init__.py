@@ -44,8 +44,8 @@ For complete documentation, see:
 from .app_register import AppRegister, RegisterType
 from .custom_inst_app import CustomInstApp
 
-# NEW: BasicAppDataTypes system
-from .datatypes import (
+# NEW: BasicAppDataTypes system (now in libs/basic-app-datatypes)
+from basic_app_datatypes import (
     BasicAppDataTypes,
     TypeMetadata,
     TYPE_REGISTRY,

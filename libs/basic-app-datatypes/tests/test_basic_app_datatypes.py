@@ -11,7 +11,7 @@ Tests cover:
 """
 
 import pytest
-from models.custom_inst.datatypes import (
+from basic_app_datatypes import (
     BasicAppDataTypes,
     TypeMetadata,
     TYPE_REGISTRY,

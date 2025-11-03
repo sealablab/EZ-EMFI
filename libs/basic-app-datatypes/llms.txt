@@ -1,0 +1,255 @@
+# BasicAppDataTypes
+
+> Type-safe register serialization for Moku FPGA applications
+
+## What is this?
+
+BasicAppDataTypes is a Python library that provides automatic register mapping and type-safe serialization between Python control applications and VHDL FPGA logic on Moku platforms (Go, Lab, Pro, Delta).
+
+**Problem it solves:** FPGA register interfaces are typically manual, error-prone bit-slicing operations. BasicAppDataTypes automates this with a type system that:
+- Packs multiple typed values into minimal registers (50-75% space savings)
+- Converts user-friendly units (volts, nanoseconds) to hardware formats (register bits, clock cycles)
+- Provides platform-aware conversions (125 MHz to 5 GHz clock rates)
+- Prevents type mismatches (±5V output vs ±20V input)
+
+## Quick Example
+
+```python
+from basic_app_datatypes import PulseDuration_ns, TypeConverter
+
+# User-friendly: 500 nanosecond pulse
+duration = PulseDuration_ns(500, width=16)
+
+# Platform-specific: Convert to clock cycles
+cycles = duration.to_cycles(clock_period_ns=8.0)  # Moku:Go @ 125 MHz
+# Result: 63 cycles
+
+# Type-safe: Get the register type
+duration.to_basic_type()
+# Result: BasicAppDataTypes.PULSE_DURATION_NS_U16
+```
+
+## Type System Overview
+
+**23 Built-in Types:**
+
+1. **Voltage Types (12)** - Fixed ranges with signed/unsigned variants:
+   - Output: ±5V (S8, S16, U7, U15)
+   - Input: ±20V (S8, S16, U7, U15)
+   - Input: ±25V (S8, S16, U7, U15)
+
+2. **Time Types (10)** - User-friendly units with multiple bit widths:
+   - Nanoseconds: U8, U16, U32
+   - Microseconds: U8, U16, U24
+   - Milliseconds: U8, U16
+   - Seconds: U8, U16
+
+3. **Boolean Type (1)** - Single bit (0 or 1)
+
+**Naming Convention:**
+- `VOLTAGE_OUTPUT_05V_S16` = Voltage, Output range, ±5V, Signed 16-bit
+- `PULSE_DURATION_US_U16` = Time duration, Microseconds, Unsigned 16-bit
+- Unsigned types save 1 bit (U15 = 0 to +5V instead of -5V to +5V)
+
+## Architecture
+
+```
+Python Domain                    FPGA Domain
+──────────────                   ────────────
+
+PulseDuration_ns(500)            std_logic_vector(15 downto 0)
+     ↓                                   ↑
+to_cycles(8.0 ns)                        |
+     ↓                                   |
+63 cycles                                |
+     ↓                                   |
+TypeConverter                            |
+     ↓                                   |
+Register bits (0x003F) ──→ Network ──→  |
+                                         |
+                                    Deserializer
+                                         ↓
+                                    App Logic
+```
+
+## Key Design Principles
+
+1. **Fixed Bit Widths** - No dynamic sizing, explicit width selection required
+2. **Platform Agnostic** - Types work across all 4 Moku platforms (Go/Lab/Pro/Delta)
+3. **MSB-Aligned Packing** - Consistent with Moku register architecture
+4. **User-Friendly Units** - Nanoseconds/volts instead of raw cycles/bits
+5. **Type Safety** - Input/Output distinction prevents range mismatches
+6. **Explicit Rounding** - ROUND_UP, ROUND_DOWN, or EXACT for time conversions
+
+## Platform Support
+
+| Platform | Clock | Period | ADC/DAC | Voltage Ranges |
+|----------|-------|--------|---------|----------------|
+| Moku:Go | 125 MHz | 8.0 ns | 12-bit | ±25V in, ±5V out |
+| Moku:Lab | 500 MHz | 2.0 ns | 12-bit | ±5V in, ±1V out |
+| Moku:Pro | 1.25 GHz | 0.8 ns | 10-bit | ±20V in, ±5V out |
+| Moku:Delta | 5 GHz | 0.2 ns | 14-bit | ±20V in, ±5V out |
+
+## File Structure
+
+```
+libs/basic-app-datatypes/
+├── README.md                   # User documentation
+├── llms.txt                    # This file (LLM context)
+├── pyproject.toml              # Package config (hatchling, pytest)
+├── basic_app_datatypes/        # Source code (~1300 lines)
+│   ├── __init__.py             # Public API exports
+│   ├── types.py                # BasicAppDataTypes enum (23 types)
+│   ├── metadata.py             # TYPE_REGISTRY with bit widths, ranges
+│   ├── time.py                 # PulseDuration_* classes (4 units)
+│   ├── voltage.py              # Voltage utilities (reserved)
+│   └── converters.py           # TypeConverter with 24+ methods
+└── tests/                      # Test suite (18 tests)
+    └── test_basic_app_datatypes.py
+```
+
+## Common Use Cases
+
+### 1. Define Time Durations
+
+```python
+from basic_app_datatypes import PulseDuration_ns, PulseDuration_us
+
+# Short pulse: 500 nanoseconds
+glitch_duration = PulseDuration_ns(500, width=16)
+
+# Long delay: 100 microseconds
+recovery_delay = PulseDuration_us(100, width=16)
+
+# Convert to hardware cycles (platform-specific)
+glitch_cycles = glitch_duration.to_cycles(clock_period_ns=8.0, rounding='ROUND_UP')
+delay_cycles = recovery_delay.to_cycles(clock_period_ns=8.0, rounding='EXACT')
+```
+
+### 2. Convert Voltages
+
+```python
+from basic_app_datatypes import TypeConverter, BasicAppDataTypes
+
+converter = TypeConverter()
+
+# Output voltage: 2.5V on ±5V range
+voltage = 2.5
+register_value = converter.voltage_output_05v_s16_to_bits(voltage)
+# Result: 16384 (0x4000) - 50% of signed 16-bit range
+
+# Input voltage: -10V on ±20V range
+voltage = -10.0
+register_value = converter.voltage_input_20v_s16_to_bits(voltage)
+# Result: -16384 (0xC000) - -50% of signed 16-bit range
+```
+
+### 3. Get Type Metadata
+
+```python
+from basic_app_datatypes import TYPE_REGISTRY, BasicAppDataTypes
+
+# Query type properties
+voltage_type = BasicAppDataTypes.VOLTAGE_OUTPUT_05V_S16
+metadata = TYPE_REGISTRY[voltage_type]
+
+print(metadata.bit_width)      # 16
+print(metadata.voltage_range)  # "±5V"
+print(metadata.is_signed)      # True
+print(metadata.description)    # "Output voltage, ±5V range, signed 16-bit"
+```
+
+## Testing
+
+Run the full test suite:
+```bash
+pytest libs/basic-app-datatypes/tests/ -v
+```
+
+**18 tests cover:**
+- Type registry completeness (all 23 types registered)
+- Voltage conversions (all 12 voltage types)
+- Time conversions (all 10 time types)
+- Platform compatibility (125 MHz to 5 GHz)
+- Boolean type (1-bit)
+- Immutability (bit widths cannot change)
+
+## Future Phases
+
+This package is **Phase 1** of a 6-phase implementation:
+
+- ✅ **Phase 1:** Core type system (COMPLETE)
+- 🔲 **Phase 2:** Automatic register mapping algorithm
+- 🔲 **Phase 3:** Package bundling system
+- 🔲 **Phase 4:** VHDL code generation templates
+- 🔲 **Phase 5:** CocotB hardware validation
+- 🔲 **Phase 6:** Migration guides and documentation
+
+**Expected Impact:** 50-75% reduction in register usage, zero manual bit manipulation.
+
+## Integration with EZ-EMFI
+
+BasicAppDataTypes is part of the [EZ-EMFI](https://github.com/yourusername/EZ-EMFI) project.
+
+**Related Components:**
+- `models/custom_inst/` - Pydantic models for YAML config (uses BasicAppDataTypes)
+- `shared/custom_inst/templates/` - VHDL Jinja2 templates (Phase 4 integration)
+- `tools/generate_custom_inst.py` - Code generator (Phase 4 integration)
+
+**Legacy System:**
+- `RegisterType` enum (COUNTER_8BIT, COUNTER_16BIT, etc.) - Old system, will be deprecated
+- `AppRegister` model - Uses old RegisterType, will migrate to BasicAppDataTypes
+
+## Design References
+
+For detailed specifications, see the EZ-EMFI repository:
+- `docs/BasicAppDataTypes/BAD_Phase1_TypeSystem.md` - Type system design
+- `docs/BasicAppDataTypes/VOLTAGE_TYPE_SYSTEM.md` - Voltage type rationale
+- `docs/BasicAppDataTypes/TIME_TYPE_SYSTEM.md` - Time type rationale
+- `docs/BasicAppDataTypes/BAD_MASTER_Orchestrator.md` - Full implementation plan
+
+## Contributing
+
+This package will eventually become a standalone git submodule.
+
+**Development:**
+1. Install as editable: `uv pip install -e libs/basic-app-datatypes`
+2. Run tests: `pytest libs/basic-app-datatypes/tests/ -v`
+3. Add new types to `types.py`, `metadata.py`, and update converters
+4. Update tests to cover new types
+
+**Design Guidelines:**
+- All types must have fixed bit widths
+- All types must work across all 4 Moku platforms
+- No dynamic sizing or runtime bit width changes
+- Prioritize user-friendly units over raw hardware formats
+- Maintain backwards compatibility with existing types
+
+## FAQ
+
+**Q: Why unsigned voltage types?**
+A: Unsigned types (U7, U15) save 1 bit when you only need positive voltages (0 to +5V instead of -5V to +5V). This enables better register packing in Phase 2.
+
+**Q: Why multiple time units instead of just nanoseconds?**
+A: User convenience. Writing `PulseDuration_ms(100)` is clearer than `PulseDuration_ns(100_000_000)`.
+
+**Q: Why fixed bit widths instead of automatic sizing?**
+A: Deterministic register packing. The register mapper (Phase 2) needs to know exact sizes upfront to minimize wasted space.
+
+**Q: Can I add custom types?**
+A: Yes! Add to `BasicAppDataTypes` enum, `TYPE_REGISTRY`, and create converter methods. Follow existing naming conventions.
+
+**Q: What's the difference between this and Pydantic models?**
+A: Pydantic models (in `models/custom_inst/`) are for YAML config validation. BasicAppDataTypes is for runtime register serialization.
+
+## Version
+
+**Current:** v0.1.0 (Alpha - Phase 1 Complete)
+**Last Updated:** 2025-11-02
+**Python Support:** >=3.10
+**Dependencies:** None (pure Python)
+**License:** [Your License Here]
+
+---
+
+**For LLMs:** This package is self-contained with no external dependencies. Focus on the type system (23 types), conversion utilities (TypeConverter), and platform-aware clock cycle calculations. The key insight is trading manual bit-slicing for automatic type-safe register packing.

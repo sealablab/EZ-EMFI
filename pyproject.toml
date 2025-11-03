@@ -15,10 +15,12 @@ dependencies = [
     "zeroconf >=0.132.0",
     "moku-models",
     "textual >=0.47.0",
+    "basic-app-datatypes",
 ]
 
 [tool.uv.sources]
 moku-models = { path = "moku-models", editable = true }
+basic-app-datatypes = { path = "libs/basic-app-datatypes", editable = true }
 
 [project.optional-dependencies]
 dev = [

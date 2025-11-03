@@ -30,13 +30,22 @@
 
 ### 2. Module Structure
 
-Created modular implementation at `models/custom_inst/datatypes/`:
-- `types.py` - BasicAppDataTypes enum (23 types)
-- `metadata.py` - TypeMetadata + TYPE_REGISTRY (23 entries)
-- `time.py` - 4 PulseDuration classes (ns, us, ms, sec)
-- `voltage.py` - Reserved for future utilities (minimal)
-- `converters.py` - TypeConverter class (24+ conversion methods)
-- `__init__.py` - Public API exports
+**NEW LOCATION (as of refactor commit):** `libs/basic-app-datatypes/`
+
+Created standalone package structure:
+- `basic_app_datatypes/types.py` - BasicAppDataTypes enum (23 types)
+- `basic_app_datatypes/metadata.py` - TypeMetadata + TYPE_REGISTRY (23 entries)
+- `basic_app_datatypes/time.py` - 4 PulseDuration classes (ns, us, ms, sec)
+- `basic_app_datatypes/voltage.py` - Reserved for future utilities (minimal)
+- `basic_app_datatypes/converters.py` - TypeConverter class (24+ conversion methods)
+- `basic_app_datatypes/__init__.py` - Public API exports
+- `tests/test_basic_app_datatypes.py` - 18 tests (bundled with package)
+- `pyproject.toml` - Standalone package config
+- `README.md` - User documentation
+- `llms.txt` - LLM-optimized context
+
+**Import:** `from basic_app_datatypes import ...` (not `models.custom_inst.datatypes`)
+**Backward Compatibility:** `from models.custom_inst import BasicAppDataTypes` still works (re-exports)
 
 ### 3. Key Design Decisions
 
@@ -83,21 +92,28 @@ Test Coverage:
 
 ### 6. Files Created
 
-**Implementation:**
-- `models/custom_inst/datatypes/types.py` (78 lines)
-- `models/custom_inst/datatypes/metadata.py` (287 lines)
-- `models/custom_inst/datatypes/time.py` (380 lines)
-- `models/custom_inst/datatypes/voltage.py` (12 lines)
-- `models/custom_inst/datatypes/converters.py` (434 lines)
-- `models/custom_inst/datatypes/__init__.py` (64 lines)
-- `models/custom_inst/__init__.py` (updated with new exports)
+**Implementation (NOW at `libs/basic-app-datatypes/`):**
+- `basic_app_datatypes/types.py` (78 lines)
+- `basic_app_datatypes/metadata.py` (287 lines)
+- `basic_app_datatypes/time.py` (380 lines)
+- `basic_app_datatypes/voltage.py` (12 lines)
+- `basic_app_datatypes/converters.py` (434 lines)
+- `basic_app_datatypes/__init__.py` (64 lines)
 
-**Tests:**
-- `python_tests/test_basic_app_datatypes.py` (18 comprehensive tests)
-- `python_tests/README.md` (directory documentation)
-- `python_tests/__init__.py`
+**Tests (NOW at `libs/basic-app-datatypes/tests/`):**
+- `tests/test_basic_app_datatypes.py` (18 comprehensive tests, ~300 lines)
+- `tests/__init__.py`
 
-**Total:** ~1,255 lines of production code + ~300 lines of tests
+**Package Infrastructure:**
+- `pyproject.toml` - Standalone package config with pytest, hatchling
+- `README.md` - User documentation (200+ lines)
+- `llms.txt` - LLM-optimized context (250+ lines)
+
+**Integration:**
+- `models/custom_inst/__init__.py` - Updated to re-export from new location
+- Root `pyproject.toml` - Added basic-app-datatypes as editable dependency
+
+**Total:** ~1,255 lines of production code + ~300 lines of tests + ~450 lines of docs
 
 ### 7. Example Usage
 
