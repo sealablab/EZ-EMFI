@@ -15,7 +15,7 @@ Design:
 
 from typing import List, Optional, Literal, Union
 from pathlib import Path
-from pydantic import BaseModel, Field, field_validator, model_validator, ConfigDict
+from pydantic import BaseModel, Field, field_validator, model_validator, ConfigDict, PrivateAttr
 import yaml
 
 from basic_app_datatypes import (
@@ -263,11 +263,8 @@ class BasicAppsRegPackage(BaseModel):
         description="Register packing strategy"
     )
 
-    # Internal cache (not serialized)
-    _mapping_cache: Optional[List[RegisterMapping]] = Field(
-        default=None,
-        exclude=True
-    )
+    # Internal cache (not serialized) - use PrivateAttr for Pydantic v2
+    _mapping_cache: Optional[List[RegisterMapping]] = PrivateAttr(default=None)
 
     @field_validator('datatypes')
     @classmethod
