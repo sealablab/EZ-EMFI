@@ -1,0 +1,94 @@
+# DS1140_PD Register Interface Specification
+# Platform-agnostic register definitions for EMFI probe driver
+#
+# Hardware Context: Riscure DS1120A EMFI Probe
+# - Fixed 50ns pulse width (hardware-determined, not software configurable)
+# - Trigger: digital_glitch (0-3.3V TTL, rising edge)
+# - Power control: pulse_amplitude (0-3.3V analog, linear 5-100% power)
+# - Current monitor: coil_current (-1.4V to 0V transient pulse)
+#
+# This interface defines FSM timing and control, NOT the EM pulse itself.
+# Automatic register mapping reduces usage from 7 manual registers → 3 registers (57% savings).
+#
+# See: docs/BasicAppDataTypes/BAD_Phase3_RegPackage_r2.md
+
+app_name: DS1140_PD
+description: "EMFI probe driver register interface with automatic mapping"
+
+mapping_strategy: best_fit  # Optimal packing (alternatives: first_fit, type_clustering)
+
+datatypes:
+  # Control signals (1-bit booleans)
+  - name: arm_probe
+    datatype: boolean
+    description: "Arm the probe driver (one-shot operation)"
+    default_value: false
+    display_name: "Arm Probe"
+
+  - name: force_fire
+    datatype: boolean
+    description: "Manual trigger for testing (bypasses threshold detection)"
+    default_value: false
+    display_name: "Force Fire"
+
+  - name: reset_fsm
+    datatype: boolean
+    description: "Reset state machine to READY state"
+    default_value: false
+    display_name: "Reset FSM"
+
+  # Timing configuration (FSM state durations)
+  - name: arm_timeout
+    datatype: pulse_duration_ms_u16
+    description: "Maximum time in armed state before timeout"
+    default_value: 1000  # 1 second in milliseconds
+    min_value: 0
+    max_value: 5000
+    display_name: "Arm Timeout"
+    units: "ms"
+
+  # Note: These are FSM state durations, NOT the EM pulse width (fixed at 50ns by DS1120A hardware)
+  - name: firing_duration
+    datatype: pulse_duration_ns_u8
+    description: "FSM duration in FIRING state (NOT EM pulse - that's hardware-fixed at 50ns)"
+    default_value: 128  # nanoseconds
+    min_value: 50
+    max_value: 255
+    display_name: "Firing State Duration"
+    units: "ns"
+
+  - name: cooling_duration
+    datatype: pulse_duration_ns_u8
+    description: "FSM duration in COOLING state (thermal recovery period)"
+    default_value: 128  # nanoseconds
+    min_value: 50
+    max_value: 255
+    display_name: "Cooling State Duration"
+    units: "ns"
+
+  # Voltage configuration (human-friendly millivolt values)
+  - name: trigger_threshold
+    datatype: voltage_input_25v_s16
+    description: "Voltage threshold for trigger detection (Moku Go/Lab/Pro: ±25V ADC range)"
+    default_value: 2400  # 2.4V in millivolts
+    min_value: -25000
+    max_value: 25000
+    display_name: "Trigger Threshold"
+    units: "mV"
+
+  - name: intensity
+    datatype: voltage_output_05v_s16
+    description: "Pulse amplitude control (0-3.3V to DS1120A, hardware clamped at probe)"
+    default_value: 2000  # 2.0V safe default in millivolts
+    min_value: 0
+    max_value: 3300  # Hardware limit (not native ±5V type max of 5000mV)
+    display_name: "Intensity"
+    units: "mV"
+
+# Expected mapping result (best_fit strategy):
+# CR6  [31:16] arm_timeout (16-bit)       | [15:0] intensity (16-bit)
+# CR7  [31:16] trigger_threshold (16-bit) | [15:8] firing_duration (8-bit) | [7:0] cooling_duration (8-bit)
+# CR8  [31] arm_probe (1-bit) | [30] force_fire (1-bit) | [29] reset_fsm (1-bit)
+#
+# Total: 3 registers (vs 7 manual registers = 57% savings)
+# Efficiency: 67/384 bits used (17.4%)
