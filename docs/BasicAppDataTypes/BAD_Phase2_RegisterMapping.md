@@ -7,6 +7,38 @@
 **Phase 1 Commit:** (to be filled after Phase 1)
 **Output:** `models/custom_inst/register_mapper.py` and mapping algorithm
 
+## Git Workflow
+
+**Branch:** `feature/BAD/P2`
+
+**Starting this phase:**
+```bash
+git checkout feature/BAD-main
+git checkout -b feature/BAD/P2
+```
+
+**During development:**
+```bash
+# Commit frequently as you implement
+git add <files>
+git commit -m "feat(BAD/P2): <description>"
+```
+
+**Completing this phase:**
+```bash
+# Final commit with phase completion
+git add .
+git commit -m "feat(BAD/P2): Complete Phase 2 - Register mapping algorithm"
+
+# Write BAD_Phase2_COMPLETE.md with summary
+
+# Merge back to feature branch
+git checkout feature/BAD-main
+git merge --no-ff feature/BAD/P2 -m "Merge Phase 2: Automatic register mapping"
+```
+
+**Full workflow:** See [BAD_MASTER_Orchestrator.md](./BAD_MASTER_Orchestrator.md#git-workflow)
+
 ## Context Loading
 
 Please review these files to understand the register constraints:

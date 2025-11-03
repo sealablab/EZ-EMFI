@@ -6,6 +6,38 @@
 **Phase 1-4 Summaries:** ./BAD_Phase{1-4}_COMPLETE.md
 **Output:** Complete test suite validating all components
 
+## Git Workflow
+
+**Branch:** `feature/BAD/P5`
+
+**Starting this phase:**
+```bash
+git checkout feature/BAD-main
+git checkout -b feature/BAD/P5
+```
+
+**During development:**
+```bash
+# Commit frequently as you implement
+git add <files>
+git commit -m "feat(BAD/P5): <description>"
+```
+
+**Completing this phase:**
+```bash
+# Final commit with phase completion
+git add .
+git commit -m "feat(BAD/P5): Complete Phase 5 - Comprehensive testing suite"
+
+# Write BAD_Phase5_COMPLETE.md with summary
+
+# Merge back to feature branch
+git checkout feature/BAD-main
+git merge --no-ff feature/BAD/P5 -m "Merge Phase 5: Testing and validation"
+```
+
+**Full workflow:** See [BAD_MASTER_Orchestrator.md](./BAD_MASTER_Orchestrator.md#git-workflow)
+
 ## Context Loading
 
 Please review these files and previous phase outputs:
