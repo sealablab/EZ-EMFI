@@ -35,6 +35,16 @@ Load this when working on:
 
 **Files in scope:** `tools/`, `models/`, `scripts/`, `shared/`
 
+### `/models` - Moku Models Submodule Context
+Load this when working on:
+- Moku platform specifications (Go/Lab/Pro/Delta)
+- Pydantic data models (MokuConfig, SlotConfig)
+- Platform hardware specs and datasheets
+- Model validation and type safety
+
+**Files in scope:** `moku-models/` (git submodule)
+**Note:** This is a separate repository. See `moku-models/CLAUDE.md` for details.
+
 ### `/test` - Testing Context
 Load this when working on:
 - CocotB progressive tests (P1/P2/P3)
@@ -54,6 +64,7 @@ EZ-EMFI/
 ├── tests/                     # CocotB progressive tests
 ├── tools/                     # Python TUI apps and utilities
 ├── models/                    # Python data models (YAML parsing)
+├── moku-models/               # Git submodule: Pydantic models for Moku platforms
 ├── scripts/                   # Build/deployment scripts
 ├── docs/                      # Domain-specific documentation
 ├── .claude/commands/          # Context slash commands
@@ -74,6 +85,9 @@ EZ-EMFI/
 ## First Time Setup
 
 ```bash
+# Initialize git submodules (REQUIRED)
+git submodule update --init --recursive
+
 # Python environment (uv)
 uv sync
 
@@ -84,6 +98,8 @@ uv run python tests/run.py volo_clk_divider
 ls .claude/commands/        # Available contexts
 uv run python tests/run.py --all  # All test modules
 ```
+
+**Note**: The `moku-models/` submodule is required for deployment scripts and Python tooling.
 
 ---
 
@@ -135,9 +151,10 @@ uv run python tests/run.py --all  # All test modules
 
 **Working on VHDL?** → Type `/vhdl` to load VHDL-specific context
 **Working on Python?** → Type `/python` to load TUI/tooling context
+**Working on Moku models?** → Type `/models` to load submodule context
 **Debugging tests?** → Type `/test` to load testing infrastructure
 
-**Why?** Keeps context tight, prevents LLM confusion between VHDL and Python domains.
+**Why?** Keeps context tight, prevents LLM confusion between VHDL, Python, and data model domains.
 
 ---
 
