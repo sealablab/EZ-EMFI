@@ -38,6 +38,27 @@ git merge --no-ff feature/BAD/P5 -m "Merge Phase 5: Testing and validation"
 
 **Full workflow:** See [BAD_MASTER_Orchestrator.md](./BAD_MASTER_Orchestrator.md#git-workflow)
 
+## ⚠️ CRITICAL: Platform Testing Requirements
+
+**This phase MUST be updated before implementation!**
+
+BasicAppDataTypes must work across **all 4 Moku platforms**. The current prompt does not include platform-specific test guidance.
+
+**Required Updates Before Starting:**
+1. Review platform specifications from `moku-models/`
+2. Add CocotB test parameterization for all platforms (Go/Lab/Pro/Delta)
+3. Create platform test matrix with different clock frequencies
+4. Validate time conversions at 125 MHz (Go), 500 MHz (Lab), 1.25 GHz (Pro), 5 GHz (Delta)
+
+**See for reference:**
+- `docs/BasicAppDataTypes/BAD_MASTER_Orchestrator.md#moku-platform-specifications`
+- `docs/BasicAppDataTypes/BAD_Phase1_TypeSystem.md` (platform context section)
+- `docs/BasicAppDataTypes/BAD_Phase4_CodeGeneration.md` (deliverable 4.4)
+
+**TODO for future implementer:** Add platform-specific test cases, CocotB clock parameterization, and multi-platform validation matrix.
+
+---
+
 ## Context Loading
 
 Please review these files and previous phase outputs:
@@ -45,6 +66,10 @@ Please review these files and previous phase outputs:
 ```bash
 # Previous phase results
 cat docs/BasicAppDataTypes/BAD_Phase4_COMPLETE.md
+
+# Platform specifications (CRITICAL)
+cat moku-models/docs/MOKU_PLATFORM_SPECIFICATIONS.md
+cat docs/BasicAppDataTypes/BAD_MASTER_Orchestrator.md | grep -A 20 "Moku Platform"
 
 # Existing test infrastructure
 cat tests/test_handshake_shim_progressive.py | head -100
