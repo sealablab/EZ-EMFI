@@ -1,0 +1,57 @@
+========================================
+CREATE PULL REQUEST HERE
+========================================
+
+Click this link (works on iPad):
+https://github.com/sealablab/EZ-EMFI/pull/new/claude/review-bad-main-commit-011CUmSeqtepjpr5MAjxV2iF
+
+========================================
+PR DETAILS
+========================================
+
+Title:
+Architecture Analysis: Mono-Repo Refactor Review
+
+Description:
+(Copy from START_HERE.md - full template included)
+Or use this short version:
+
+---
+
+## Summary
+Architecture analysis of mono-repo refactor planning document (commit b0cb32bb).
+
+## Documents Added
+- ARCHITECTURE_COMPARISON_ANALYSIS.md (7,600 words) - Cross-repo analysis
+- FORGE_ARCHITECTURE_ANALYSIS.md (6,800 words) - Forge architecture patterns
+- docs/MONO_REPO_ITERATION_PROMPT.md (662 lines) - Iterative design guide
+- START_HERE.md - Branch overview and next steps
+
+## Key Findings
+- Planning doc underestimates complexity 3-4x (8-12h → 32-46h)
+- 7 critical architectural gaps identified
+- Recommends iterative spike branch approach (13-18h with validation)
+
+## Next Steps
+1. Review analysis on dev laptop
+2. Create spike branches to validate 4 critical decisions
+3. Iterate until architecture validated
+4. Execute migration with confidence
+
+See START_HERE.md for detailed instructions.
+
+---
+
+========================================
+AFTER CREATING PR
+========================================
+
+You're done! Everything is safely in git.
+
+Next session (on dev laptop):
+1. git checkout claude/review-bad-main-commit-011CUmSeqtepjpr5MAjxV2iF
+2. cat START_HERE.md
+3. cat docs/MONO_REPO_ITERATION_PROMPT.md
+4. Start first spike branch
+
+========================================
