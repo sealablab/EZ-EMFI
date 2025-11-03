@@ -30,7 +30,7 @@ This document guides the iterative design of the **moku-custom-BPD mono-repo arc
 - Pure Python code generation platform
 - 5 agents (3,233 lines): forge-context, deployment-context, docgen-context, hardware-debug-context, workflow-coordinator
 - 3 submodules in `libs/`: basic-app-datatypes, moku-models, riscure-models
-- Single llms.txt entry point (319 lines), NO nested CLAUDE.md
+- Multi-layer docs: Root llms.txt (319 lines) + submodule llms.txt + submodule CLAUDE.md
 - Package contract: manifest.json as source of truth
 
 **Planning Document** (commit b0cb32bb):

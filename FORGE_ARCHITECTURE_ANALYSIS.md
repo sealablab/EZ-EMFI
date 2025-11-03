@@ -160,13 +160,23 @@ moku-instrument-forge/
 
 ## 3. Documentation Architecture
 
-### 3.1 llms.txt Strategy
+### 3.1 llms.txt Strategy - CORRECTED
 
-**Single Root-Level llms.txt (319 lines)**
+**Multi-Layer llms.txt Architecture (4 files total)**
 
-Location: `/llms.txt` (root only, no nested llms.txt files)
+**CORRECTION:** moku-instrument-forge uses **progressive disclosure across repositories** with llms.txt files in BOTH root AND submodules:
 
-**Content Structure:**
+```
+moku-instrument-forge/
+├── llms.txt (319 lines)                          # Main entry point
+└── libs/
+    ├── basic-app-datatypes/llms.txt (237 lines)  # Type system reference
+    ├── moku-models/llms.txt (147 lines)          # Platform specs
+    └── riscure-models/llms.txt (187 lines)       # Probe specifications
+```
+
+**Root llms.txt (319 lines) - Main Entry Point:**
+
 1. **Quick Reference** (lines 1-55)
    - What is this?
    - Core workflow diagram
@@ -177,7 +187,7 @@ Location: `/llms.txt` (root only, no nested llms.txt files)
 2. **Type System** (lines 57-76)
    - BasicAppDataTypes overview
    - Most common types
-   - Links to authoritative sources
+   - **Links to authoritative sources** (points to submodule llms.txt!)
 
 3. **Register Mapping** (lines 78-113)
    - Automatic packing strategies
@@ -219,61 +229,146 @@ Location: `/llms.txt` (root only, no nested llms.txt files)
     - Minimal YAML spec
     - Common error messages
 
-**Key Insight:** Single llms.txt serves as **entry point** for AI agents, then delegates to specific agent contexts via slash commands.
+**Key Pattern:** Root llms.txt serves as **entry point**, then **delegates** to submodule llms.txt for domain-specific details (e.g., "complete type catalog at libs/basic-app-datatypes/llms.txt").
 
-### 3.2 Nested CLAUDE.md Strategy
+### 3.2 Nested CLAUDE.md Strategy - CORRECTED
 
-**IMPORTANT FINDING:** moku-instrument-forge does **NOT** use nested CLAUDE.md files!
+**CORRECTION:** moku-instrument-forge **DOES** use nested CLAUDE.md files in submodules!
 
-**Documentation hierarchy:**
+**Actual Documentation Hierarchy:**
 ```
 moku-instrument-forge/
 ├── llms.txt                              # Entry point (AI-optimized)
 ├── README.md                             # Human entry point
-├── .claude/
-│   ├── agents/*.md                       # Agent contexts (NO CLAUDE.md)
+├── .claude/                              # Root agent system
+│   ├── agents/*.md                       # Agent contexts
 │   ├── commands/*.md                     # Slash commands
 │   └── shared/*.md                       # Shared knowledge
-└── docs/
-    ├── README.md                         # Documentation index
-    ├── architecture/*.md                 # Design docs
-    ├── reference/*.md                    # API reference
-    ├── guides/*.md                       # User guides
-    └── examples/*.md                     # Walkthroughs
+├── docs/                                 # Project documentation
+│   ├── README.md                         # Documentation index
+│   ├── architecture/*.md                 # Design docs
+│   ├── reference/*.md                    # API reference
+│   ├── guides/*.md                       # User guides
+│   └── examples/*.md                     # Walkthroughs
+└── libs/                                 # SUBMODULES (each with own docs!)
+    ├── basic-app-datatypes/
+    │   ├── llms.txt                      # Type system quick ref
+    │   └── .claude/commands/library.md   # Library context
+    ├── moku-models/
+    │   ├── llms.txt                      # Platform specs quick ref
+    │   ├── CLAUDE.md (260 lines!)        # Full submodule context
+    │   └── .claude/settings.local.json   # Claude settings
+    └── riscure-models/
+        ├── llms.txt                      # Probe specs quick ref
+        └── CLAUDE.md (255 lines!)        # Full submodule context
 ```
 
 **Contrast with EZ-EMFI:**
 - **EZ-EMFI:** Top-level `CLAUDE.md` + slash commands load additional context
-- **forge:** NO top-level `CLAUDE.md`, relies on `llms.txt` + agent system
+- **forge:** NO root `CLAUDE.md`, BUT submodules have their own CLAUDE.md
+- **Pattern:** Progressive disclosure ACROSS repository boundaries
 
 **Architectural Advantage:**
-- `llms.txt` is Claude-optimized (concise, scannable)
-- `README.md` is human-optimized (comprehensive, prose)
-- No context ambiguity (only one AI entry point)
+- Root `llms.txt` is concise entry point (319 lines)
+- Submodules have full context docs (CLAUDE.md) for deep work
+- Each submodule is self-documenting (can be used standalone)
+- No context ambiguity at each level
 
-### 3.3 Documentation Layers
+### 3.3 Documentation Layers - CORRECTED
 
-**Layer 1: AI Entry Point**
+**Layer 1: AI Entry Point (Root)**
 - `llms.txt` (319 lines, ultra-concise)
 - Purpose: Bootstrap AI understanding in <2 minutes
+- Pattern: Points to submodule docs for details
 
-**Layer 2: Agent Contexts**
+**Layer 2: Submodule Quick References**
+- `libs/basic-app-datatypes/llms.txt` (237 lines) - Complete type catalog
+- `libs/moku-models/llms.txt` (147 lines) - Platform specs summary
+- `libs/riscure-models/llms.txt` (187 lines) - Probe specs summary
+- Purpose: Domain-specific quick references
+
+**Layer 3: Submodule Deep Context**
+- `libs/moku-models/CLAUDE.md` (260 lines) - Full platform model guide
+- `libs/riscure-models/CLAUDE.md` (255 lines) - Full probe integration guide
+- `libs/basic-app-datatypes/.claude/commands/library.md` (81 lines) - Library context
+- Purpose: Deep dive into submodule architecture and usage
+
+**Layer 4: Root Agent Contexts**
 - `.claude/agents/*/agent.md` (5 files, 3,233 lines total)
-- Purpose: Deep domain expertise for specific tasks
+- Purpose: Deep domain expertise for forge-specific tasks
 
-**Layer 3: Shared Knowledge**
+**Layer 5: Shared Knowledge**
 - `.claude/shared/*.md` (4 files)
 - Purpose: Cross-agent reference docs (type system, package contract)
 
-**Layer 4: User Documentation**
+**Layer 6: User Documentation**
 - `docs/**/*.md` (28 files, ~12,000 words)
 - Purpose: Human-readable guides, references, examples
 
-**Layer 5: App-Specific Docs**
+**Layer 7: App-Specific Docs**
 - `apps/DS1140_PD/README.md` (66 lines)
 - Purpose: Generated application documentation
 
-**Key Pattern:** Progressive disclosure - start with llms.txt, drill down as needed.
+**Key Pattern:** **Progressive disclosure ACROSS repository boundaries** - start with root llms.txt, delegate to submodule docs for domain details, drill down to CLAUDE.md for deep work.
+
+### 3.4 Submodule Documentation Details
+
+**basic-app-datatypes (Type System Library):**
+```
+libs/basic-app-datatypes/
+├── llms.txt (237 lines)                # Complete type catalog
+│   ├── 23 type definitions with bit widths
+│   ├── Conversion formulas
+│   ├── Platform-aware serialization examples
+│   └── Usage patterns
+└── .claude/
+    └── commands/library.md (81 lines)  # Library development context
+```
+
+**Key Content:** Authoritative source for all 23 BasicAppDataTypes, including voltage types (12), time types (10), and boolean (1). Root llms.txt references this as "complete type catalog."
+
+**moku-models (Platform Specifications):**
+```
+libs/moku-models/
+├── llms.txt (147 lines)                # Quick platform reference
+│   ├── Core models (MokuConfig, SlotConfig)
+│   ├── Platform comparison table
+│   ├── Basic usage patterns
+│   └── Links to full docs
+├── CLAUDE.md (260 lines)               # Full development guide
+│   ├── Detailed model documentation
+│   ├── Multi-slot configuration examples
+│   ├── Routing validation workflows
+│   ├── Integration with parent projects
+│   └── Development workflow
+└── .claude/
+    └── settings.local.json             # Claude Code settings
+```
+
+**Key Content:** Complete Pydantic models for Moku Go/Lab/Pro/Delta platforms, used by both EZ-EMFI (parent project in CLAUDE.md) and moku-instrument-forge (git submodule).
+
+**riscure-models (Probe Hardware Specifications):**
+```
+libs/riscure-models/
+├── llms.txt (187 lines)                # Quick probe reference
+│   ├── DS1120A port summary
+│   ├── Voltage compatibility checking
+│   ├── Typical wiring patterns
+│   └── Integration examples
+└── CLAUDE.md (255 lines)               # Full integration guide
+    ├── Complete port specifications
+    ├── Voltage safety validation
+    ├── Moku platform integration
+    ├── Development workflow
+    └── Future enhancements roadmap
+```
+
+**Key Content:** Riscure DS1120A/DS1121A probe models for voltage-safe wiring validation with Moku platforms.
+
+**Documentation Philosophy:**
+- **llms.txt**: Fast lookup for common tasks (<5 min read)
+- **CLAUDE.md**: Deep context for development work (15-30 min read)
+- **Standalone**: Each submodule can be used independently in other projects
 
 ---
 
@@ -636,9 +731,11 @@ docs/
 
 ### 10.1 What EZ-EMFI Can Learn from Forge
 
-1. **Single llms.txt Entry Point**
-   - Replace `CLAUDE.md` with `llms.txt` (more concise)
-   - Use slash commands for context loading (don't embed everything)
+1. **Multi-Layer llms.txt Strategy**
+   - Root llms.txt as main entry point (concise, <400 lines)
+   - Submodule llms.txt for domain-specific quick refs
+   - CLAUDE.md in submodules for deep context (when needed)
+   - Use slash commands for context loading (progressive disclosure)
 
 2. **Strict Agent Boundaries**
    - Define read/write scopes explicitly
@@ -733,20 +830,25 @@ docs/
    - Adapt forge-context → probe-design-context
    - Reuse deployment-context, hardware-debug-context as-is
 
-2. ✅ **llms.txt Entry Point**
-   - Replace `CLAUDE.md` with concise `llms.txt`
-   - Keep it under 400 lines (forge: 319 lines)
+2. ✅ **Multi-Layer Documentation Strategy**
+   - Root llms.txt as concise entry point (<400 lines)
+   - Submodule llms.txt for domain quick refs
+   - Submodule CLAUDE.md for deep context (moku-models pattern)
+   - Progressive disclosure across repository boundaries
 
 3. ✅ **Submodule Path Consistency**
    - Move all submodules to `libs/`
    - Follow pattern: `libs/basic-app-datatypes/`, `libs/moku-models/`, `libs/volo-platform-vhdl/`
+   - Each submodule self-documents (llms.txt + optional CLAUDE.md)
 
 4. ✅ **Package Contract Pattern**
    - Define JSON schemas for VHDL utilities
    - Example: `volo_utilities_manifest.json` with available utilities, interfaces
 
 5. ✅ **Progressive Disclosure Docs**
-   - Quick ref (<400 lines)
+   - Root llms.txt (~300-400 lines)
+   - Submodule llms.txt (quick refs, ~150-250 lines each)
+   - Submodule CLAUDE.md (deep dive, ~250-300 lines when needed)
    - Agent contexts (500-800 lines each)
    - Full guides (as needed)
 
@@ -798,11 +900,12 @@ docs/
 
 ### Key Architectural Insights:
 
-1. **Single llms.txt entry point** (not nested CLAUDE.md files)
+1. **Multi-layer documentation strategy** (root llms.txt → submodule llms.txt → submodule CLAUDE.md)
 2. **Package contract pattern** (manifest.json as source of truth)
 3. **Agent boundaries enforced via documentation** (read/write scopes)
-4. **Git submodules for libraries** (all in `libs/`, consistent paths)
+4. **Git submodules for libraries** (all in `libs/`, each self-documenting)
 5. **Delegates VHDL testing to consumer repos** (forge is pure Python)
+6. **Progressive disclosure across repo boundaries** (each submodule standalone)
 
 ### For moku-custom-BPD Migration:
 
