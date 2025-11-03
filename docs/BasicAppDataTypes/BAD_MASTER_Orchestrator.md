@@ -1,9 +1,8 @@
 # BasicAppDataTypes (BAD) Master Orchestrator
 
 **Created:** 2025-11-02
+**Last Updated:** 2025-11-02 (Phase 2 architecture clarified)
 **Purpose:** Master index and progress tracker for BasicAppDataTypes implementation
-
-NOTE: We probably need to relocate the `models/custom_inst/register_mapper.py` to some other more sane location for the project. (I didnt want to itneerrupt Phase1 while it was on a run) 
 
 ## Overview
 

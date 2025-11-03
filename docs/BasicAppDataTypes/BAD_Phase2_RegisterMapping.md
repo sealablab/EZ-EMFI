@@ -3,9 +3,14 @@
 **Phase:** 2 of 6
 **Goal:** Implement automatic register mapping algorithm for efficient bit packing
 **Prerequisites:** Phase 1 complete ✓
-**Phase 1 Commit:** `14dfec1` (feat(BAD/P1): Complete Phase 1)
-**Output:** `models/custom_inst/register_mapper.py` and mapping algorithm
-**Test Directory:** `python_tests/` (separate from CocotB VHDL tests)
+**Phase 1 Merge:** `1701df9` (Merge Phase 1: Core type system implementation)
+**Phase 1 Refactor:** `778c91b` (refactor(BAD): Migrate BasicAppDataTypes to standalone package)
+**Output:** Split architecture (core algorithm + Pydantic wrapper)
+  - Core: `libs/basic-app-datatypes/basic_app_datatypes/mapper.py`
+  - Wrapper: `models/custom_inst/bad_register_mapper.py`
+**Test Directories:**
+  - Core tests: `libs/basic-app-datatypes/tests/test_mapper.py`
+  - Integration tests: `python_tests/test_bad_register_mapper.py`
 
 ## Git Workflow
 
@@ -47,16 +52,20 @@ git merge --no-ff feature/BAD/P2 -m "Merge Phase 2: Automatic register mapping"
 - ✅ TYPE_REGISTRY: Complete metadata for all types
 - ✅ PulseDuration classes: User-friendly time API
 - ✅ TypeConverter: Voltage/time conversions
-- ✅ Module location: `models/custom_inst/datatypes/`
-- ✅ Tests: `python_tests/test_basic_app_datatypes.py` (18 tests passing)
+- ✅ **NEW location:** `libs/basic-app-datatypes/` (standalone package)
+- ✅ Tests: `libs/basic-app-datatypes/tests/test_basic_app_datatypes.py` (18 tests passing)
 
 **Key imports for Phase 2:**
 ```python
-from models.custom_inst.datatypes import (
+# Core types (from standalone package)
+from basic_app_datatypes import (
     BasicAppDataTypes,
     TypeMetadata,
     TYPE_REGISTRY,
 )
+
+# Pydantic models (for integration)
+from models.custom_inst import CustomInstApp, AppRegister
 ```
 
 **Register constraints to review:**
@@ -81,48 +90,108 @@ cat shared/custom_inst/templates/custom_inst_shim_template.vhd | grep -A 5 "app_
 
 ### Specific Deliverables
 
-#### 2.1 Register Mapper Core
-Create `models/custom_inst/register_mapper.py`:
+**ARCHITECTURE DECISION:** Split into two components for clean separation of concerns.
+
+#### 2.1A Core Mapping Algorithm (Pure Python)
+Create `libs/basic-app-datatypes/basic_app_datatypes/mapper.py`:
+
+**Purpose:** Standalone, reusable mapping algorithm with zero dependencies.
 
 ```python
+from dataclasses import dataclass
+from typing import List, Tuple
+from .types import BasicAppDataTypes
+from .metadata import TYPE_REGISTRY
+
 @dataclass
-class MappedRegister:
-    """Result of mapping a BasicAppDataType to physical registers"""
+class RegisterMapping:
+    """Result of mapping a BasicAppDataType to physical registers (pure data)"""
     name: str
-    type: BasicAppDataTypes
+    datatype: BasicAppDataTypes
     cr_number: int  # 6-17
     bit_slice: Tuple[int, int]  # (msb, lsb) e.g., (31, 16)
 
-    def to_vhdl_extraction(self) -> str:
+    def to_vhdl_slice(self) -> str:
         """Generate VHDL bit extraction code"""
         if self.bit_slice[0] == self.bit_slice[1]:
             return f"app_reg_{self.cr_number}({self.bit_slice[0]})"
         return f"app_reg_{self.cr_number}({self.bit_slice[0]} downto {self.bit_slice[1]})"
 
 class RegisterMapper:
-    """Maps BasicAppDataTypes to Control Registers with optimal packing"""
+    """Pure algorithm: Maps BasicAppDataTypes to Control Registers"""
 
     MAX_APP_REGISTERS = 12  # CR6-CR17
     BITS_PER_REGISTER = 32
     TOTAL_BITS = MAX_APP_REGISTERS * BITS_PER_REGISTER  # 384 bits
 
-    def map_registers(self,
-                      datatypes: List[Tuple[str, BasicAppDataTypes]],
-                      strategy: str = "first_fit") -> List[MappedRegister]:
+    def map(self,
+            items: List[Tuple[str, BasicAppDataTypes]],
+            strategy: str = "best_fit") -> List[RegisterMapping]:
         """
-        Map datatypes to control registers
+        Map datatypes to control registers (pure function)
 
         Args:
-            datatypes: List of (name, type) tuples
-            strategy: Packing strategy ('first_fit', 'best_fit', 'optimal')
+            items: List of (name, BasicAppDataTypes) tuples
+            strategy: Packing strategy ('first_fit', 'best_fit')
 
         Returns:
-            List of mapped registers with CR assignments
+            List of RegisterMapping objects
 
         Raises:
-            RegisterOverflowError: If types don't fit in 384 bits
+            ValueError: If types don't fit in 384 bits
         """
 ```
+
+**Key Principles:**
+- ✅ No Pydantic dependency
+- ✅ No YAML parsing
+- ✅ Reusable across projects
+- ✅ Testable in isolation
+- ✅ Travels with basic-app-datatypes package
+
+---
+
+#### 2.1B Pydantic Integration Layer
+Create `models/custom_inst/bad_register_mapper.py`:
+
+**Purpose:** Integrate core mapper with CustomInstApp Pydantic models and YAML config.
+
+```python
+from typing import List, Tuple
+from pydantic import BaseModel, Field, field_validator
+from basic_app_datatypes import BasicAppDataTypes, RegisterMapper, RegisterMapping
+from .app_register import AppRegister
+
+class BADRegisterConfig(BaseModel):
+    """Pydantic model for BAD register configuration in YAML"""
+    name: str
+    datatype: BasicAppDataTypes
+    description: str = ""
+
+class BADRegisterMapper(BaseModel):
+    """Pydantic wrapper for RegisterMapper with YAML integration"""
+    registers: List[BADRegisterConfig]
+    strategy: str = Field(default="best_fit", pattern="^(first_fit|best_fit)$")
+
+    def to_register_mappings(self) -> List[RegisterMapping]:
+        """Apply core mapping algorithm"""
+        mapper = RegisterMapper()
+        items = [(r.name, r.datatype) for r in self.registers]
+        return mapper.map(items, strategy=self.strategy)
+
+    def to_app_registers(self) -> List[AppRegister]:
+        """Convert to old AppRegister format (backward compatibility)"""
+        mappings = self.to_register_mappings()
+        # Bridge BAD system with legacy CustomInstApp
+        return [self._mapping_to_app_register(m) for m in mappings]
+```
+
+**Key Principles:**
+- ✅ Uses core mapper underneath
+- ✅ Handles YAML parsing
+- ✅ Integrates with CustomInstApp
+- ✅ Provides backward compatibility
+- ✅ Stays in EZ-EMFI repo (not portable)
 
 #### 2.2 Packing Strategies
 
@@ -293,13 +362,13 @@ def test_simple_mapping():
     """Test basic register assignment"""
     mapper = RegisterMapper()
     datatypes = [
-        ("intensity", BasicAppDataTypes.VOLTAGE_MV),
-        ("threshold", BasicAppDataTypes.VOLTAGE_MV),
-        ("timeout", BasicAppDataTypes.TIME_MS),
+        ("intensity", BasicAppDataTypes.VOLTAGE_OUTPUT_05V_S16),
+        ("threshold", BasicAppDataTypes.VOLTAGE_OUTPUT_05V_S16),
+        ("timeout", BasicAppDataTypes.PULSE_DURATION_MS_U16),
         ("enable", BasicAppDataTypes.BOOLEAN),
     ]
 
-    mapping = mapper.map_registers(datatypes)
+    mapping = mapper.map(datatypes)
 
     # Should fit in 2-3 registers
     assert max(m.cr_number for m in mapping) <= 8
@@ -314,29 +383,29 @@ def test_overflow_detection():
     mapper = RegisterMapper()
 
     # Try to map 25 16-bit values (400 bits > 384 limit)
-    datatypes = [(f"val_{i}", BasicAppDataTypes.VOLTAGE_MV)
+    datatypes = [(f"val_{i}", BasicAppDataTypes.VOLTAGE_OUTPUT_05V_S16)
                  for i in range(25)]
 
-    with pytest.raises(RegisterOverflowError):
-        mapper.map_registers(datatypes)
+    with pytest.raises(ValueError):
+        mapper.map(datatypes)
 
 def test_packing_efficiency():
     """Test different packing strategies"""
     datatypes = [
-        ("v1", BasicAppDataTypes.VOLTAGE_MV),  # 16 bits
-        ("v2", BasicAppDataTypes.VOLTAGE_MV),  # 16 bits
-        ("t1", BasicAppDataTypes.TIME_MS),     # 16 bits
-        ("u1", BasicAppDataTypes.UNSIGNED_8),  # 8 bits
-        ("u2", BasicAppDataTypes.UNSIGNED_8),  # 8 bits
-        ("b1", BasicAppDataTypes.BOOLEAN),     # 1 bit
-        ("b2", BasicAppDataTypes.BOOLEAN),     # 1 bit
+        ("v1", BasicAppDataTypes.VOLTAGE_OUTPUT_05V_S16),  # 16 bits
+        ("v2", BasicAppDataTypes.VOLTAGE_OUTPUT_05V_S16),  # 16 bits
+        ("t1", BasicAppDataTypes.PULSE_DURATION_MS_U16),   # 16 bits
+        ("u1", BasicAppDataTypes.PULSE_DURATION_NS_U8),    # 8 bits
+        ("u2", BasicAppDataTypes.PULSE_DURATION_NS_U8),    # 8 bits
+        ("b1", BasicAppDataTypes.BOOLEAN),                 # 1 bit
+        ("b2", BasicAppDataTypes.BOOLEAN),                 # 1 bit
     ]
 
     mapper = RegisterMapper()
 
     # Test different strategies
-    first_fit = mapper.map_registers(datatypes, strategy="first_fit")
-    best_fit = mapper.map_registers(datatypes, strategy="best_fit")
+    first_fit = mapper.map(datatypes, strategy="first_fit")
+    best_fit = mapper.map(datatypes, strategy="best_fit")
 
     # Best fit should use fewer registers
     assert max(m.cr_number for m in best_fit) <= max(m.cr_number for m in first_fit)
@@ -345,13 +414,13 @@ def test_deterministic_mapping():
     """Ensure mapping is reproducible"""
     mapper = RegisterMapper()
     datatypes = [
-        ("a", BasicAppDataTypes.VOLTAGE_MV),
-        ("b", BasicAppDataTypes.TIME_MS),
+        ("a", BasicAppDataTypes.VOLTAGE_OUTPUT_05V_S16),
+        ("b", BasicAppDataTypes.PULSE_DURATION_MS_U16),
         ("c", BasicAppDataTypes.BOOLEAN),
     ]
 
-    mapping1 = mapper.map_registers(datatypes)
-    mapping2 = mapper.map_registers(datatypes)
+    mapping1 = mapper.map(datatypes)
+    mapping2 = mapper.map(datatypes)
 
     # Same input should produce same output
     assert mapping1 == mapping2
@@ -364,22 +433,22 @@ Show how the mapper would handle DS1140_PD:
 ```python
 # DS1140_PD datatypes
 ds1140_types = [
-    ("arm_probe", BasicAppDataTypes.BOOLEAN),      # 1 bit
-    ("force_fire", BasicAppDataTypes.BOOLEAN),     # 1 bit
-    ("reset_fsm", BasicAppDataTypes.BOOLEAN),      # 1 bit
-    ("clock_divider", BasicAppDataTypes.UNSIGNED_8),   # 8 bits
-    ("arm_timeout", BasicAppDataTypes.TIME_MS),    # 16 bits
-    ("firing_duration", BasicAppDataTypes.UNSIGNED_8), # 8 bits
-    ("cooling_duration", BasicAppDataTypes.UNSIGNED_8), # 8 bits
-    ("trigger_threshold", BasicAppDataTypes.VOLTAGE_MV), # 16 bits
-    ("intensity", BasicAppDataTypes.VOLTAGE_MV),   # 16 bits
+    ("arm_probe", BasicAppDataTypes.BOOLEAN),              # 1 bit
+    ("force_fire", BasicAppDataTypes.BOOLEAN),             # 1 bit
+    ("reset_fsm", BasicAppDataTypes.BOOLEAN),              # 1 bit
+    ("clock_divider", BasicAppDataTypes.PULSE_DURATION_NS_U8),  # 8 bits (clock divider)
+    ("arm_timeout", BasicAppDataTypes.PULSE_DURATION_MS_U16),   # 16 bits
+    ("firing_duration", BasicAppDataTypes.PULSE_DURATION_NS_U8), # 8 bits
+    ("cooling_duration", BasicAppDataTypes.PULSE_DURATION_NS_U8), # 8 bits
+    ("trigger_threshold", BasicAppDataTypes.VOLTAGE_INPUT_25V_S16), # 16 bits
+    ("intensity", BasicAppDataTypes.VOLTAGE_OUTPUT_05V_S16),     # 16 bits
 ]
 
 # Current: Uses 9 registers (one per type)
 # With packing: Should fit in 3-4 registers
 
 mapper = RegisterMapper()
-mapping = mapper.map_registers(ds1140_types, strategy="best_fit")
+mapping = mapper.map(ds1140_types, strategy="best_fit")
 report = MappingReport.from_mapping(mapping)
 
 print(report.visualize())
@@ -431,22 +500,43 @@ class HybridMapper(RegisterMapper):
 
 Phase 2 is complete when:
 
-- [ ] `register_mapper.py` implemented with core algorithm
-- [ ] Multiple packing strategies available and tested
+**Core Algorithm (libs/):**
+- [ ] `libs/basic-app-datatypes/basic_app_datatypes/mapper.py` implemented
+- [ ] Pure mapping algorithm (no Pydantic dependencies)
+- [ ] Multiple packing strategies (first_fit, best_fit)
+- [ ] Unit tests in `libs/basic-app-datatypes/tests/test_mapper.py` passing
+
+**Pydantic Integration (models/):**
+- [ ] `models/custom_inst/bad_register_mapper.py` implemented
+- [ ] Wraps core mapper with Pydantic models
+- [ ] Integration tests in `python_tests/test_bad_register_mapper.py` passing
+
+**Documentation & Validation:**
 - [ ] Mapping report generator with visualizations
 - [ ] Constraint validation working
 - [ ] DS1140_PD example demonstrates 50% reduction
-- [ ] Unit tests passing for all strategies
 - [ ] Phase summary written to `BAD_Phase2_COMPLETE.md`
 
 ## Output Artifacts
 
-### Required Files
-1. `models/custom_inst/register_mapper.py` - Mapping algorithm
-2. `python_tests/test_register_mapper.py` - Test suite (Python unit tests)
-3. `docs/BasicAppDataTypes/BAD_Phase2_COMPLETE.md` - Summary
+### Required Files (Split Architecture)
 
-**Note:** Use `python_tests/` directory for Python unit tests, NOT `tests/` (which contains CocotB VHDL tests)
+**1. Core Algorithm (Standalone Package)**
+- `libs/basic-app-datatypes/basic_app_datatypes/mapper.py` - Pure mapping algorithm
+- `libs/basic-app-datatypes/tests/test_mapper.py` - Unit tests for core algorithm
+- Updated `libs/basic-app-datatypes/basic_app_datatypes/__init__.py` - Export mapper classes
+
+**2. Pydantic Integration (EZ-EMFI)**
+- `models/custom_inst/bad_register_mapper.py` - Pydantic wrapper
+- `python_tests/test_bad_register_mapper.py` - Integration tests with YAML/Pydantic
+
+**3. Documentation**
+- `docs/BasicAppDataTypes/BAD_Phase2_COMPLETE.md` - Summary of both components
+
+**Note:**
+- Core algorithm tests go in `libs/basic-app-datatypes/tests/` (travels with package)
+- Integration tests go in `python_tests/` (EZ-EMFI specific)
+- Do NOT use `tests/` directory (reserved for CocotB VHDL tests)
 
 ### Summary Format
 The completion summary should include:
