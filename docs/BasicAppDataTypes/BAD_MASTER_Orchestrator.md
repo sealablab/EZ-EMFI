@@ -3,6 +3,8 @@
 **Created:** 2025-11-02
 **Purpose:** Master index and progress tracker for BasicAppDataTypes implementation
 
+NOTE: We probably need to relocate the `models/custom_inst/register_mapper.py` to some other more sane location for the project. (I didnt want to itneerrupt Phase1 while it was on a run) 
+
 ## Overview
 
 This document orchestrates the implementation of BasicAppDataTypes - a fundamental upgrade to the EZ-EMFI custom instrument architecture that provides:
@@ -14,7 +16,7 @@ This document orchestrates the implementation of BasicAppDataTypes - a fundament
 
 | Phase | File | Status | Branch | Merged | Summary | Commit |
 |-------|------|--------|--------|--------|---------|--------|
-| 1 | [BAD_Phase1_TypeSystem.md](./BAD_Phase1_TypeSystem.md) | 🟢 Complete | `feature/BAD/P1` | ⏳ Pending | [BAD_Phase1_COMPLETE.md](./BAD_Phase1_COMPLETE.md) | `14dfec1` |
+| 1 | [BAD_Phase1_TypeSystem.md](./BAD_Phase1_TypeSystem.md) | 🟢 Complete | `feature/BAD/P1` | ✅ | [BAD_Phase1_COMPLETE.md](./BAD_Phase1_COMPLETE.md) | `1701df9` |
 | 2 | [BAD_Phase2_RegisterMapping.md](./BAD_Phase2_RegisterMapping.md) | 🔴 Not Started | `feature/BAD/P2` | ❌ | `BAD_Phase2_COMPLETE.md` | - |
 | 3 | [BAD_Phase3_RegPackage.md](./BAD_Phase3_RegPackage.md) | 🔴 Not Started | `feature/BAD/P3` | ❌ | `BAD_Phase3_COMPLETE.md` | - |
 | 4 | [BAD_Phase4_CodeGeneration.md](./BAD_Phase4_CodeGeneration.md) | 🔴 Not Started | `feature/BAD/P4` | ❌ | `BAD_Phase4_COMPLETE.md` | - |
