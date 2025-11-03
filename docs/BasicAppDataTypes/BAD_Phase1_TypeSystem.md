@@ -41,6 +41,7 @@ git merge --no-ff feature/BAD/P1 -m "Merge Phase 1: Core type system implementat
 
 Please review these files to understand the current system:
 
+### Current Type System
 ```bash
 # Current type system
 cat models/custom_inst/app_register.py
@@ -54,6 +55,40 @@ cat VHDL/packages/ds1120_pd_pkg.vhd | grep -A 5 "constant.*signed"
 # Current code generator's type handling
 cat tools/generate_custom_inst.py | grep -A 10 "get_vhdl_bit_range"
 ```
+
+### Moku Platform Specifications
+BasicAppDataTypes must align with Moku hardware constraints. Review platform specs:
+
+```bash
+# Comprehensive platform specifications (Go, Lab, Pro, Delta)
+cat moku-models/docs/MOKU_PLATFORM_SPECIFICATIONS.md
+
+# Platform model implementations
+cat moku-models/moku_models/platforms/moku_go.py
+cat moku-models/moku_models/platforms/moku_lab.py
+cat moku-models/moku_models/platforms/moku_pro.py
+cat moku-models/moku_models/platforms/moku_delta.py
+
+# Central deployment abstraction
+cat moku-models/moku_models/moku_config.py
+```
+
+**Key Platform Constraints:**
+
+| Platform | ADC Bits | DAC Bits | Input Range | Output Range | Clock |
+|----------|----------|----------|-------------|--------------|-------|
+| Moku:Go | 12-bit | 12-bit | ±25V (50 Vpp) | ±5V (10 Vpp) | 125 MHz |
+| Moku:Lab | 12-bit | 16-bit | ±5V (10 Vpp) | ±1V (2 Vpp into 50Ω) | 500 MHz |
+| Moku:Pro | 10-bit* | 16-bit | ±20V (40 Vpp) | ±5V (up to 100 MHz) | 1.25 GHz |
+| Moku:Delta | 14-bit* | 14-bit | ±20V (40 Vpp) | ±5V (up to 100 MHz) | 5 GHz |
+
+\* Blended ADC architectures (Pro: 10-bit + 18-bit, Delta: 14-bit + 20-bit)
+
+**Implications for VOLTAGE_MV type:**
+- Must support **±10V range minimum** (covers all platforms with margin)
+- 16-bit signed gives ~305µV/bit resolution (sufficient for EMFI probes)
+- Moku:Go has widest input range (±25V) but lowest resolution (12-bit)
+- Type system should be **platform-agnostic** (works on all 4 platforms)
 
 ## Phase 1 Objectives
 
@@ -162,25 +197,40 @@ TYPE_REGISTRY = {
 As you implement, we'll need to decide:
 
 1. **Voltage Resolution:**
-   - Current: ±10V range in 16 bits = ~305µV/bit
-   - Alternative: ±5V range in 16 bits = ~153µV/bit
-   - Which is more appropriate for EMFI probes?
+   - **Recommended: ±10V range in 16 bits = ~305µV/bit**
+   - Rationale: Covers all Moku platforms (Go: ±25V, Lab: ±5V, Pro/Delta: ±20V)
+   - EMFI probe context: DS1140-PD datasheet shows ±10V operating range
+   - Alternative ±5V would limit compatibility with Moku:Go/Pro/Delta
+   - **Decision: Use ±10V (10000 mV) as full-scale range**
 
 2. **Time Type Granularity:**
-   - Should we have TIME_NS, TIME_US, TIME_MS or just one?
-   - How do we handle clock frequency variations?
+   - **Platform clock frequencies vary: 125 MHz (Go) to 5 GHz (Delta)**
+   - TIME_NS: Needed for high-precision timing on Moku:Pro/Delta
+   - TIME_US: Useful for mid-range pulse widths (common in EMFI)
+   - TIME_MS: Convenient for longer delays
+   - **Decision: Provide all three types, let application choose appropriate granularity**
+   - Clock conversion handled at VHDL generation time (platform-specific)
 
 3. **Boolean Packing:**
-   - Pack multiple booleans per register bit?
-   - Or always use full bit with MSB alignment?
+   - Current system uses MSB-aligned 32-bit registers
+   - Phase 2 RegisterMapper will handle optimal bit packing
+   - **Decision: Boolean = 1 bit, let Phase 2 pack multiple booleans per register**
+   - Example: 8 booleans could fit in upper 8 bits of one 32-bit register
 
 4. **Default Values:**
-   - Type-based defaults (0V, 0ms, False)?
-   - Or application-specified defaults?
+   - **Type-based defaults** for safety (0V, 0ns, False)
+   - Application can override in YAML (`default_mv: 2400`)
+   - **Decision: TypeMetadata specifies type defaults, YAML can override**
 
 5. **Signed vs Unsigned:**
-   - Should voltage always be signed?
-   - Should time always be unsigned?
+   - **Voltage: Always signed** (EMFI probes can have negative/positive pulses)
+   - **Time: Always unsigned** (negative time durations are meaningless)
+   - **Decision: VOLTAGE_MV = signed(15 downto 0), TIME_* = unsigned**
+
+6. **Platform Compatibility:**
+   - Type system must work across Moku:Go, Lab, Pro, Delta
+   - VHDL templates will use platform specs from `moku-models`
+   - **Decision: Types are platform-agnostic, code generator adapts to platform**
 
 ## Test Cases to Implement
 
@@ -218,6 +268,32 @@ def test_bit_width_immutable():
     # Should not be able to change
     with pytest.raises(AttributeError):
         metadata.bit_width = 32
+
+def test_platform_compatibility():
+    """Verify voltage range works across all Moku platforms."""
+    from moku_models import MOKU_GO_PLATFORM, MOKU_LAB_PLATFORM, MOKU_PRO_PLATFORM
+
+    # Test voltage is within all platform capabilities
+    test_voltages_mv = [0, 2400, 5000, -5000, 10000, -10000]
+
+    for mv in test_voltages_mv:
+        raw = TypeConverter.voltage_mv_to_raw(mv)
+
+        # Verify voltage is within platform input ranges
+        assert abs(mv / 1000.0) <= 25  # Moku:Go max input (±25V)
+        assert abs(mv / 1000.0) <= 20  # Moku:Pro/Delta max (±20V)
+        # Note: ±10V easily fits Moku:Lab ±5V range
+
+    # Verify clock conversions for different platforms
+    time_ms = 100  # 100ms
+
+    # Moku:Go (125 MHz)
+    cycles_go = TypeConverter.time_ms_to_clk_cycles(time_ms, 125_000_000)
+    assert cycles_go == 12_500_000
+
+    # Moku:Delta (5 GHz)
+    cycles_delta = TypeConverter.time_ms_to_clk_cycles(time_ms, 5_000_000_000)
+    assert cycles_delta == 500_000_000
 ```
 
 ## Migration Example
@@ -288,14 +364,20 @@ Update `BAD_Phase2_RegisterMapping.md` header with:
 
 ## Getting Started
 
-1. Create the basic_app_datatypes.py file
-2. Start with VOLTAGE_MV as the canonical example
-3. Get feedback on design decisions as you go
-4. Implement other types following the pattern
-5. Write comprehensive tests
-6. Document in completion summary
+1. **Review platform specifications** from `moku-models/` to understand hardware constraints
+2. Create the basic_app_datatypes.py file
+3. Start with VOLTAGE_MV as the canonical example (most constrained by hardware)
+4. Get feedback on design decisions as you go
+5. Implement other types following the pattern
+6. Write comprehensive tests (including platform compatibility tests)
+7. Document in completion summary
 
-Remember: Each type must have a **fixed bit width** that's known a priori. This is the fundamental requirement that enables automatic register packing in Phase 2.
+**Dependencies:**
+- `moku-models` package (git submodule at `moku-models/`)
+- Platform constants: `MOKU_GO_PLATFORM`, `MOKU_LAB_PLATFORM`, `MOKU_PRO_PLATFORM`, `MOKU_DELTA_PLATFORM`
+- Import in tests: `from moku_models import MOKU_GO_PLATFORM`
+
+Remember: Each type must have a **fixed bit width** that's known a priori. This is the fundamental requirement that enables automatic register packing in Phase 2. Types must also be **platform-agnostic** (work on all 4 Moku platforms).
 
 ---
 
