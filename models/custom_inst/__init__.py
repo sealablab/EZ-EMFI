@@ -44,10 +44,33 @@ For complete documentation, see:
 from .app_register import AppRegister, RegisterType
 from .custom_inst_app import CustomInstApp
 
+# NEW: BasicAppDataTypes system
+from .datatypes import (
+    BasicAppDataTypes,
+    TypeMetadata,
+    TYPE_REGISTRY,
+    PulseDuration_ns,
+    PulseDuration_us,
+    PulseDuration_ms,
+    PulseDuration_sec,
+    TypeConverter,
+)
+
 __all__ = [
+    # Existing (legacy)
     'CustomInstApp',
     'AppRegister',
-    'RegisterType',
+    'RegisterType',  # OLD - will be deprecated eventually
+
+    # NEW: BasicAppDataTypes
+    'BasicAppDataTypes',
+    'TypeMetadata',
+    'TYPE_REGISTRY',
+    'PulseDuration_ns',
+    'PulseDuration_us',
+    'PulseDuration_ms',
+    'PulseDuration_sec',
+    'TypeConverter',
 ]
 
 __version__ = '1.0.0'

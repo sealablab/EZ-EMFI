@@ -71,3 +71,8 @@ warn_unused_configs = true
 disallow_untyped_defs = false  # More lenient for examples
 ignore_missing_imports = true  # Ignore missing type stubs for examples
 show_error_codes = true
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+]
