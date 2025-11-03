@@ -2,10 +2,10 @@
 
 **Phase:** 2 of 6
 **Goal:** Implement automatic register mapping algorithm for efficient bit packing
-**Prerequisites:** Phase 1 complete
-**Phase 1 Summary:** ./BAD_Phase1_COMPLETE.md
-**Phase 1 Commit:** (to be filled after Phase 1)
+**Prerequisites:** Phase 1 complete ✓
+**Phase 1 Commit:** `14dfec1` (feat(BAD/P1): Complete Phase 1)
 **Output:** `models/custom_inst/register_mapper.py` and mapping algorithm
+**Test Directory:** `python_tests/` (separate from CocotB VHDL tests)
 
 ## Git Workflow
 
@@ -41,16 +41,30 @@ git merge --no-ff feature/BAD/P2 -m "Merge Phase 2: Automatic register mapping"
 
 ## Context Loading
 
-Please review these files to understand the register constraints:
+**Phase 1 Results:**
+- ✅ BasicAppDataTypes enum: 23 types (12 voltage + 10 time + 1 boolean)
+- ✅ TypeMetadata with immutable bit widths
+- ✅ TYPE_REGISTRY: Complete metadata for all types
+- ✅ PulseDuration classes: User-friendly time API
+- ✅ TypeConverter: Voltage/time conversions
+- ✅ Module location: `models/custom_inst/datatypes/`
+- ✅ Tests: `python_tests/test_basic_app_datatypes.py` (18 tests passing)
 
+**Key imports for Phase 2:**
+```python
+from models.custom_inst.datatypes import (
+    BasicAppDataTypes,
+    TypeMetadata,
+    TYPE_REGISTRY,
+)
+```
+
+**Register constraints to review:**
 ```bash
-# Phase 1 results (if available)
-cat docs/BasicAppDataTypes/BAD_Phase1_COMPLETE.md
-
 # Current register allocation
 cat shared/custom_inst/custom_inst_common_pkg.vhd | grep -A 5 "APP_REG"
 
-# How registers are currently assigned
+# How registers are currently assigned (manual)
 cat DS1140_PD_app.yaml | grep -A 2 "cr_number"
 
 # Current bit extraction logic
@@ -272,7 +286,7 @@ CR6[15:0] = 16-bit value_2
 
 ## Test Cases
 
-Create `tests/test_register_mapper.py`:
+Create `python_tests/test_register_mapper.py` (separate from CocotB tests in `tests/`):
 
 ```python
 def test_simple_mapping():
@@ -429,8 +443,10 @@ Phase 2 is complete when:
 
 ### Required Files
 1. `models/custom_inst/register_mapper.py` - Mapping algorithm
-2. `tests/test_register_mapper.py` - Test suite
+2. `python_tests/test_register_mapper.py` - Test suite (Python unit tests)
 3. `docs/BasicAppDataTypes/BAD_Phase2_COMPLETE.md` - Summary
+
+**Note:** Use `python_tests/` directory for Python unit tests, NOT `tests/` (which contains CocotB VHDL tests)
 
 ### Summary Format
 The completion summary should include:
