@@ -44,6 +44,9 @@ from .time import (
 # Conversion utilities
 from .converters import TypeConverter
 
+# Register mapping (Phase 2)
+from .mapper import RegisterMapper, RegisterMapping, MappingReport
+
 __all__ = [
     # Enums and metadata
     'BasicAppDataTypes',
@@ -58,6 +61,11 @@ __all__ = [
 
     # Converters
     'TypeConverter',
+
+    # Register mapping (Phase 2)
+    'RegisterMapper',
+    'RegisterMapping',
+    'MappingReport',
 ]
 
 __version__ = '1.0.0'
