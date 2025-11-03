@@ -14,7 +14,7 @@ This document orchestrates the implementation of BasicAppDataTypes - a fundament
 
 | Phase | File | Status | Branch | Merged | Summary | Commit |
 |-------|------|--------|--------|--------|---------|--------|
-| 1 | [BAD_Phase1_TypeSystem.md](./BAD_Phase1_TypeSystem.md) | 🔴 Not Started | `feature/BAD/P1` | ❌ | `BAD_Phase1_COMPLETE.md` | - |
+| 1 | [BAD_Phase1_TypeSystem.md](./BAD_Phase1_TypeSystem.md) | 🟢 Complete | `feature/BAD/P1` | ⏳ Pending | [BAD_Phase1_COMPLETE.md](./BAD_Phase1_COMPLETE.md) | `14dfec1` |
 | 2 | [BAD_Phase2_RegisterMapping.md](./BAD_Phase2_RegisterMapping.md) | 🔴 Not Started | `feature/BAD/P2` | ❌ | `BAD_Phase2_COMPLETE.md` | - |
 | 3 | [BAD_Phase3_RegPackage.md](./BAD_Phase3_RegPackage.md) | 🔴 Not Started | `feature/BAD/P3` | ❌ | `BAD_Phase3_COMPLETE.md` | - |
 | 4 | [BAD_Phase4_CodeGeneration.md](./BAD_Phase4_CodeGeneration.md) | 🔴 Not Started | `feature/BAD/P4` | ❌ | `BAD_Phase4_COMPLETE.md` | - |
@@ -286,6 +286,9 @@ Track key decisions here as phases progress:
 |------|-------|----------|-----------|
 | 2025-11-02 | Setup | Use 12 registers for apps | Reserve 4 for future internal use |
 | 2025-11-02 | Setup | MSB-aligned packing | Consistent with current architecture |
+| 2025-11-02 | P1 | Modular file structure (6 files) | Clean separation, easier to navigate |
+| 2025-11-02 | P1 | 23 types (not 25) | Time system needs 10 types, not 12 |
+| 2025-11-02 | P1 | Separate python_tests/ directory | Avoid CocotB test conflicts |
 
 ## Notes for Implementation
 
