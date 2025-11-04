@@ -87,6 +87,35 @@ Original planning doc (commit `b0cb32bb`) proposes big-bang mono-repo migration 
 
 ---
 
+## 🎉 SPIKE TESTING COMPLETE!
+
+**All 4 architectural decisions validated** in [moku-spike-redux](https://github.com/sealablab/moku-spike-redux) (3.75h actual vs 6-8h estimated - 47% faster!)
+
+### Spike Results Summary
+
+| Spike | Decision | Result | Time |
+|-------|----------|--------|------|
+| **1** | Forge integration | ✅ Use as submodule | 60 min |
+| **2** | VHDL build | ✅ Cocotb/pytest (0.27s build, 440x faster than goal) | 60 min |
+| **3** | Test infrastructure | ✅ Pytest (0.00s discovery, 5000x faster than goal) | 60 min |
+| **4** | Agent boundaries | ✅ probe-design-context (564 lines, no conflicts) | 45 min |
+
+### 📄 Complete Evaluation: `docs/SPIKE_EVALUATION_AND_PATH_FORWARD.md` (991 lines)
+
+**What's in the evaluation:**
+- Detailed analysis of all 4 spikes
+- Validated monorepo structure
+- Phase-by-phase migration plan (4 phases, 9-13 hours)
+- Recommended monorepo name: **`moku-custom-BPD`**
+- Critical success factors and rollback plan
+- Key learnings and architectural insights
+
+### Status: ✅ **READY FOR PRODUCTION MIGRATION**
+
+**Next action:** Review evaluation → Approve → Execute Phase 1 (create production repo)
+
+---
+
 ## 🚀 Next Steps (Do These in Order)
 
 ### Step 1: Create Pull Request (Do Now on iPad)
