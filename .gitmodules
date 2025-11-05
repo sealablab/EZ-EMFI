@@ -1,3 +1,6 @@
 [submodule "moku-models"]
 	path = moku-models
 	url = https://github.com/sealablab/moku-models.git
+[submodule "libs/bpd-vhdl-tiny"]
+	path = libs/bpd-vhdl-tiny
+	url = git@github.com:sealablab/bpd-vhdl-tiny.git
